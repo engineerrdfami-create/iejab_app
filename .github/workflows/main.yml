@@ -238,7 +238,7 @@ jobs:
 
         # 8. Settings Privacy Screen
         cat << 'EOF' > settings_privacy.dart
-        import 'package0:flutter/material.dart';
+        import 'package:flutter/material.dart';
         class SettingsPrivacyScreen extends StatelessWidget {
           const SettingsPrivacyScreen({super.key});
           @override
