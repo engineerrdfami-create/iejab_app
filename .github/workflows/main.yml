@@ -1,13 +1,12 @@
 name: Build Najma Android APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+      - master
 
-permissions:
-  contents: read
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,99 +15,142 @@ jobs:
 
     steps:
 
-      # 1 - تحميل المستودع
+      # --------------------------------
+      # 1. تحميل المشروع
+      # --------------------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2 - تثبيت Java
-      # لا نستخدم gradle/actions/setup-gradle هنا
-      # لأن مشروع Flutter سيتم إنشاؤه لاحقاً
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: gradle
 
-      # 3 - تثبيت Flutter
+      # --------------------------------
+      # 2. تثبيت Flutter
+      # --------------------------------
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
           channel: stable
           cache: true
 
-      # 4 - التحقق من Flutter
+
+      # --------------------------------
+      # 3. إنشاء مشروع Flutter إذا لم يكن موجودًا
+      # --------------------------------
+      - name: Create Najma Flutter Project
+        shell: bash
+        run: |
+          if [ ! -f "pubspec.yaml" ]; then
+            echo "Flutter project not found."
+            echo "Creating Najma Flutter project..."
+
+            flutter create . \
+              --project-name=najma \
+              --org=com.najma.app \
+              --platforms=android
+
+          else
+            echo "Flutter project already exists."
+          fi
+
+
+      # --------------------------------
+      # 4. التحقق من Flutter
+      # --------------------------------
       - name: Check Flutter
         run: |
           flutter --version
-          dart --version
+          flutter doctor -v
 
-      # 5 - إنشاء مشروع Najma
-      - name: Create Najma Flutter Project
-        run: |
-          rm -rf najma_app
 
-          flutter create \
-            --org com.najma.app \
-            --project-name najma \
-            --platforms android \
-            najma_app
+      # --------------------------------
+      # 5. تثبيت Java
+      # --------------------------------
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
 
-      # 6 - الانتقال إلى المشروع
-      - name: Enter Najma Project
-        run: |
-          cd najma_app
-          flutter pub get
 
-      # 7 - إنشاء مجلدات التطبيق
+      # --------------------------------
+      # 6. إعداد Android SDK
+      # --------------------------------
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+
+      # --------------------------------
+      # 7. إنشاء مجلدات المشروع
+      # --------------------------------
       - name: Create App Structure
+        shell: bash
         run: |
-          cd najma_app
-
+          mkdir -p assets
+          mkdir -p lib
           mkdir -p lib/screens
           mkdir -p lib/widgets
           mkdir -p lib/models
           mkdir -p lib/services
-          mkdir -p lib/theme
-          mkdir -p assets/images
-          mkdir -p assets/videos
 
-      # 8 - فحص مشروع Flutter
-      - name: Flutter Analyze
-        run: |
-          cd najma_app
-          flutter analyze
 
-      # 9 - تنسيق Dart
-      - name: Format Dart
-        run: |
-          cd najma_app
-          dart format lib
-
-      # 10 - جلب الحزم مرة أخرى
+      # --------------------------------
+      # 8. تحميل الحزم
+      # --------------------------------
       - name: Flutter Pub Get
         run: |
-          cd najma_app
           flutter pub get
 
-      # 11 - بناء APK Release
+
+      # --------------------------------
+      # 9. فحص المشروع
+      # --------------------------------
+      - name: Flutter Analyze
+        run: |
+          flutter analyze
+
+
+      # --------------------------------
+      # 10. تنسيق Dart
+      # --------------------------------
+      - name: Format Dart Code
+        run: |
+          dart format lib
+
+
+      # --------------------------------
+      # 11. بناء APK
+      # --------------------------------
       - name: Build Release APK
         run: |
-          cd najma_app
           flutter build apk --release
 
-      # 12 - تجهيز APK
-      - name: Prepare APK Artifact
-        run: |
-          mkdir -p output
-          cp najma_app/build/app/outputs/flutter-apk/app-release.apk \
-             output/Najma-release.apk
 
-      # 13 - رفع APK
+      # --------------------------------
+      # 12. تجهيز ملف APK
+      # --------------------------------
+      - name: Prepare APK Artifact
+        shell: bash
+        run: |
+          mkdir -p build/najma-apk
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             build/najma-apk/Najma.apk
+
+
+      # --------------------------------
+      # 13. رفع APK إلى GitHub
+      # --------------------------------
       - name: Upload Najma APK
         uses: actions/upload-artifact@v4
         with:
           name: Najma-Android-APK
-          path: output/Najma-release.apk
+          path: build/najma-apk/Najma.apk
           if-no-files-found: error
+
+
+      # --------------------------------
+      # 14. نجاح البناء
+      # --------------------------------
+      - name: Build Complete
+        run: |
+          echo "======================================"
+          echo "Najma Android APK built successfully!"
+          echo "======================================"
