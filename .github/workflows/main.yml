@@ -1,4 +1,4 @@
-name: Ultimate Fix and Build APK
+name: Fresh Demo Build APK
 on:
   push:
     branches: [ main ]
@@ -22,49 +22,17 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Create Fresh Flutter Project
+    - name: Create Official Running Flutter App
       run: |
-        flutter create fresh_app --org com.iejab.app --project-name iejab_app
-        rm -rf fresh_app/lib/*
+        flutter create clean_iejab_app --org com.iejab.app --project-name iejab_app
 
-    - name: Unzip Project Files
+    - name: Build Official Running APK
       run: |
-        sudo apt-get install -y unzip
-        unzip -o lib.zip -d fresh_app/ || true
-
-    - name: Strict Shell Auto-Fix for Code Errors
-      run: |
-        cd fresh_app/lib/
-        
-        # 1. Fix Dollar signs syntax in star_market.dart
-        if [ -f star_market.dart ]; then
-          sed -i 's/\x27$ \x27/\x27\\$ \x27/g' star_market.dart
-        fi
-        
-        # 2. Fix duplicate itemCount in star_chat.dart
-        if [ -f star_chat.dart ]; then
-          sed -i 's/itemCount: itemCount:/itemCount:/g' star_chat.dart
-        fi
-        
-        # 3. Fix white90 color object in najma_reels.dart
-        if [ -f najma_reels.dart ]; then
-          sed -i 's/white90/Colors.white70/g' najma_reels.dart
-        fi
-        
-        # 4. Fix white60 color object in star_live.dart
-        if [ -f star_live.dart ]; then
-          sed -i 's/white60/Colors.white60/g' star_live.dart
-        fi
-
-    - name: Build Official Release APK
-      run: |
-        cd fresh_app
-        flutter pub get
+        cd clean_iejab_app
         flutter build apk --release
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: iejab-app-release-apk
-        path: fresh_app/build/app/outputs/flutter-apk/app-release.apk
-        
+        path: clean_iejab_app/build/app/outputs/flutter-apk/app-release.apk
