@@ -62,6 +62,7 @@ jobs:
         import 'najma_reels.dart';
         import 'star_market.dart';
         import 'starpay_wallet.dart';
+        import 'settings_privacy.dart';
         class MainNavigationScreen extends StatefulWidget {
           const MainNavigationScreen({super.key});
           @override
@@ -79,7 +80,25 @@ jobs:
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              body: _screens[_currentIndex],
+              body: Stack(
+                children: [
+                  _screens[_currentIndex],
+                  if (_currentIndex == 4)
+                    Positioned(
+                      top: 50,
+                      left: 20,
+                      child: IconButton(
+                        icon: const Icon(Icons.settings, color: Colors.white, size: 28),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SettingsPrivacyScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
               bottomNavigationBar: BottomNavigationBar(
                 currentIndex: _currentIndex,
                 type: BottomNavigationBarType.fixed,
@@ -108,33 +127,16 @@ jobs:
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              appBar: AppBar(
-                title: const Text('رسائل', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                backgroundColor: const Color(0xFF0F101D),
-                elevation: 0,
-                actions: [IconButton(icon: const Icon(Icons.edit_note, color: Colors.white), onPressed: () {})],
-              ),
+              appBar: AppBar(title: const Text('رسائل', style: TextStyle(fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFF0F101D), elevation: 0),
               body: ListView.builder(
                 itemCount: 5,
                 itemBuilder: (context, index) {
                   final names = ['أحمد المقبلي', 'مريم علي', 'فريق الدعم', 'أسامة خالد', 'يسرى محمد'];
                   final msgs = ['مرحباً بك، هل شاهدت البث اليوم؟', 'تم إرسال الهدية بنجاح 🎁', 'كيف يمكننا مساعدتك يا هندسة؟', 'التطبيق فخم جداً عاشت يدك', 'هل رصيد المحفظة محدث؟'];
-                  final times = ['١٢:٠١ م', '١١:٤٥ ص', 'أمس', 'أمس', '٢ سبتمبر'];
                   return ListTile(
-                    leading: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: const Color(0xFF6C5CE7),
-                          child: Text(names[index][0], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        ),
-                        if (index < 2)
-                          Positioned(bottom: 0, right: 0, child: Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle, border: Border.all(color: const Color(0xFF0F101D), width: 2)))),
-                      ],
-                    ),
-                    title: Text(names[index], style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    subtitle: Text(msgs[index], style: TextStyle(color: Colors.grey.shade400, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    trailing: Text(times[index], style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
+                    leading: CircleAvatar(backgroundColor: const Color(0xFF6C5CE7), child: Text(names[index][0])),
+                    title: Text(names[index], style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(msgs[index], style: const TextStyle(color: Colors.grey)),
                   );
                 },
               ),
@@ -157,39 +159,9 @@ jobs:
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.8),
                 itemCount: 2,
                 itemBuilder: (context, index) {
-                  final hosts = ['الشيف جلال', 'لينا أحمد - طبخ'];
                   return Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1F2033),
-                      borderRadius: BorderRadius.circular(16),
-                      image: DecorationImage(
-                        image: NetworkImage('https://picsum.photos{index + 10}'),
-                        fit: BoxFit.cover,
-                        colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.3), BoxBlendMode.srcOver),
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: 10, left: 10,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(8)),
-                            child: const Text('بث مباشر', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 12, right: 12, left: 12,
-                          child: Row(
-                            children: [
-                              const CircleAvatar(radius: 12, backgroundColor: Color(0xFF6C5CE7), child: Icon(Icons.person, size: 12, color: Colors.white)),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text(hosts[index], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12), overflow: TextOverflow.ellipsis)),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFF1F2033), borderRadius: BorderRadius.circular(16)),
+                    child: const Center(child: Icon(Icons.live_tv, size: 40, color: Colors.white24)),
                   );
                 },
               ),
@@ -201,23 +173,56 @@ jobs:
         # 5. Najma Reels Screen
         cat << 'EOF' > najma_reels.dart
         import 'package:flutter/material.dart';
-        class NajmaReelsScreen extends StatelessWidget {
+        class NajmaReelsScreen extends StatefulWidget {
           const NajmaReelsScreen({super.key});
+          @override
+          State<NajmaReelsScreen> createState() => _NajmaReelsScreenState();
+        }
+        class _NajmaReelsScreenState extends State<NajmaReelsScreen> {
+          final List<Map<String, String>> _reelsData = [
+            {'username': '@jalal_cooking', 'description': 'تحدي طبخ الزربيان العدني على أصوله! 🍲🔥 #نجمة #طبخ_يمني', 'likes': '١.٥ م', 'comments': '٤.٢ ألف'},
+            {'username': '@sara_ahmed', 'description': 'طريقة تحضير حلى النجوم الفاخر في ٥ دقائق فقط! ✨🍰', 'likes': '٨٥0 ألف', 'comments': '١.٨ ألف'}
+          ];
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              body: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage('https://unsplash.com'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
+              backgroundColor: const Color(0xFF0F101D),
+              body: PageView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: _reelsData.length,
+                itemBuilder: (context, index) {
+                  final reel = _reelsData[index];
+                  return Stack(
+                    children: [
+                      const Center(child: Icon(Icons.video_collection, size: 80, color: Colors.white10)),
+                      Positioned(bottom: 40, right: 15, child: Column(children: [const Icon(Icons.favorite, color: Colors.redAccent, size: 30), Text(reel['likes']!), const SizedBox(height: 15), const Icon(Icons.chat_bubble, size: 28), Text(reel['comments']!)])),
+                      Positioned(bottom: 40, left: 20, right: 80, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(reel['username']!, style: const TextStyle(fontWeight: FontWeight.bold)), const SizedBox(height: 5), Text(reel['description']!)]))
+                    ],
+                  );
+                },
+              ),
+            );
+          }
+        }
+        EOF
+
+        # 6. Star Market Screen
+        cat << 'EOF' > star_market.dart
+        import 'package:flutter/material.dart';
+        class StarMarketScreen extends StatelessWidget {
+          const StarMarketScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('استكشاف الهاشتاغات', style: TextStyle(fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFF0F101D), elevation: 0),
+              body: ListView(padding: const EdgeInsets.all(16), children: const [ListTile(leading: Icon(Icons.tag), title: Text('الموسيقى اليمنية'), subtitle: Text('١.٥ م مشاهدة'))]),
+            );
+          }
+        }
+        EOF
+
+        # 7. StarPay Wallet Screen
+        cat << 'EOF' > starpay_wallet.dart
+        import 'package:flutter/material.dart';
+        class StarPayWalletScreen extends StatelessWidget {
+          const StarPayWalletScreen({super.key});
