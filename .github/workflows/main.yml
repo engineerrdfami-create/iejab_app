@@ -1,4 +1,4 @@
-Name: Deploy Najma App Luxury Dark UI
+name: Deploy Najma App Luxury Dark UI
 on:
   push:
     branches: [ main ]
@@ -33,7 +33,7 @@ jobs:
         
         # 1. Main entry file
         cat << 'EOF' > main.dart
-        import 'package0:flutter/material.dart';
+        import 'package:flutter/material.dart';
         import 'main_navigation.dart';
         void main() => runApp(const MyApp());
         class MyApp extends StatelessWidget {
@@ -208,7 +208,7 @@ jobs:
 
         # 6. Star Market Screen
         cat << 'EOF' > star_market.dart
-        import 'package0:flutter/material.dart';
+        import 'package:flutter/material.dart';
         class StarMarketScreen extends StatelessWidget {
           const StarMarketScreen({super.key});
           @override
