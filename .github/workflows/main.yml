@@ -1,46 +1,15 @@
-name: Generate Pubspec and Build APK
+name: Pure Flutter Create and Build APK
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build_apk:
+  build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-
-    - name: Unzip Project Files
-      run: |
-        sudo apt-get install -y unzip
-        unzip -o lib.zip || true
-        unzip -o .github.zip || true
-
-    - name: Automatically Create Missing pubspec.yaml
-      run: |
-        cat << 'EOF' > pubspec.yaml
-        name: iejab_app
-        description: "A new Flutter project for Iejab App."
-        publish_to: 'none'
-        version: 1.0.0+1
-
-        environment:
-          sdk: '>=3.0.0 <4.0.0'
-
-        dependencies:
-          flutter:
-            sdk: flutter
-          cupertino_icons: ^1.0.2
-
-        dev_dependencies:
-          flutter_test:
-            sdk: flutter
-          flutter_lints: ^2.0.0
-
-        flutter:
-          uses-material-design: true
-        EOF
 
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -53,14 +22,28 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Install Dependencies
-      run: flutter pub get
+    - name: Create Fresh Flutter Project
+      run: |
+        flutter create fresh_app --org com.iejab.app --project-name iejab_app
+        rm -rf fresh_app/lib/*
+
+    - name: Unzip and Inject Custom UI Files
+      run: |
+        sudo apt-get install -y unzip
+        if [ -f lib.zip ]; then
+          unzip -o lib.zip -d fresh_app/
+        else
+          echo "lib.zip not found, skipping extraction"
+        fi
 
     - name: Build Official APK
-      run: flutter build apk --release
+      run: |
+        cd fresh_app
+        flutter pub get
+        flutter build apk --release
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: iejab-app-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: fresh_app/build/app/outputs/flutter-apk/app-release.apk
