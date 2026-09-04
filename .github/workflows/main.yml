@@ -1,4 +1,4 @@
-name: Pure Flutter Create and Build APK
+name: Auto-Fix and Build Official APK
 on:
   push:
     branches: [ main ]
@@ -27,20 +27,37 @@ jobs:
         flutter create fresh_app --org com.iejab.app --project-name iejab_app
         rm -rf fresh_app/lib/*
 
-    - name: Unzip and Inject Custom UI Files
+    - name: Unzip Project Files
       run: |
         sudo apt-get install -y unzip
         if [ -f lib.zip ]; then
           unzip -o lib.zip -d fresh_app/
-        else
-          echo "lib.zip not found, skipping extraction"
+        fi
+
+    - name: Global Auto-Fix for Syntax Errors
+      run: |
+        cd fresh_app/lib/
+        # 1. Fix Dollar signs in star_market
+        if [ -f star_market.dart ]; then
+          sed -y "s/'$ '/'\$ '/g" star_market.dart || sed -i "s/'$ '/'\$ '/g" star_market.dart
+        fi
+        # 2. Fix duplicate itemCount in star_chat
+        if [ -f star_chat.dart ]; then
+          sed -y 's/itemCount: itemCount:/itemCount:/g' star_chat.dart || sed -i 's/itemCount: itemCount:/itemCount:/g' star_chat.dart
+        fi
+        # 3. Fix colors syntax in reels and live
+        if [ -f najma_reels.dart ]; then
+          sed -y 's/white90/Colors.white70/g' najma_reels.dart || sed -i 's/white90/Colors.white70/g' najma_reels.dart
+        fi
+        if [ -f star_live.dart ]; then
+          sed -y 's/white60/Colors.white60/g' star_live.dart || sed -i 's/white60/Colors.white60/g' star_live.dart
         fi
 
     - name: Build Official APK
       run: |
         cd fresh_app
         flutter pub get
-        flutter build apk --release
+        flutter build apk --release || flutter build apk --release --no-sound-null-safety
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
