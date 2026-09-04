@@ -1,4 +1,4 @@
-name: Build Najma TikTok-Style Full App
+name: Build Ejab TikTok-Style Full App
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Najma Android APK
+    name: Build Ejab Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -26,13 +26,14 @@ jobs:
       # 2. Java 17
       # =========================================================
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: '17'
+          cache: gradle
 
       # =========================================================
-      # 3. Flutter
+      # 3. Flutter Stable
       # =========================================================
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -43,22 +44,26 @@ jobs:
       # =========================================================
       # 4. Create clean Flutter project
       # =========================================================
-      - name: Create Najma Flutter Project
+      - name: Create Clean Ejab Flutter Project
         shell: bash
         run: |
           set -e
 
-          rm -rf clean_najma_app
+          rm -rf clean_ejab_app
 
           flutter create \
-            --org com.najma.app \
-            --project-name najma_app \
+            --org com.ejab.app \
+            --project-name ejab_app \
             --platforms android \
-            clean_najma_app
+            clean_ejab_app
 
-          cd clean_najma_app
+          cd clean_ejab_app
 
+          # حذف ملفات Flutter الافتراضية
           rm -rf lib/*
+          rm -rf test/*
+
+          # إنشاء مجلد الشاشات
           mkdir -p lib/screens
 
       # =========================================================
@@ -68,7 +73,8 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib
+
+          cd clean_ejab_app/lib
 
           cat > main.dart <<'DART'
           import 'package:flutter/material.dart';
@@ -76,17 +82,17 @@ jobs:
 
           void main() {
             WidgetsFlutterBinding.ensureInitialized();
-            runApp(const NajmaApp());
+            runApp(const EjabApp());
           }
 
-          class NajmaApp extends StatelessWidget {
-            const NajmaApp({super.key});
+          class EjabApp extends StatelessWidget {
+            const EjabApp({super.key});
 
             @override
             Widget build(BuildContext context) {
               return MaterialApp(
                 debugShowCheckedModeBanner: false,
-                title: 'نجمة | Najma',
+                title: 'إعجاب | Ejab',
                 theme: ThemeData(
                   useMaterial3: true,
                   brightness: Brightness.light,
@@ -115,7 +121,8 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib/screens
+
+          cd clean_ejab_app/lib/screens
 
           cat > main_navigation.dart <<'DART'
           import 'package:flutter/material.dart';
@@ -136,6 +143,7 @@ jobs:
 
           class _MainNavigationScreenState
               extends State<MainNavigationScreen> {
+
             int currentIndex = 0;
 
             final List<Widget> pages = const [
@@ -191,11 +199,12 @@ jobs:
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceAround,
                     children: [
                       _navItem(
                         icon: Icons.home_rounded,
-                        label: 'الصفحة الرئيسية',
+                        label: 'الرئيسية',
                         index: 0,
                       ),
                       _navItem(
@@ -207,7 +216,7 @@ jobs:
                       _createButton(),
                       _navItem(
                         icon: Icons.chat_bubble_outline_rounded,
-                        label: 'صندوق الوارد',
+                        label: 'الوارد',
                         index: 3,
                         badge: '99+',
                       ),
@@ -236,7 +245,8 @@ jobs:
                 child: SizedBox(
                   width: 72,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
                     children: [
                       Stack(
                         clipBehavior: Clip.none,
@@ -253,13 +263,16 @@ jobs:
                               top: -8,
                               right: -12,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
+                                padding:
+                                    const EdgeInsets.symmetric(
                                   horizontal: 6,
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFE2C55),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color:
+                                      const Color(0xFFFE2C55),
+                                  borderRadius:
+                                      BorderRadius.circular(20),
                                 ),
                                 child: Text(
                                   badge,
@@ -283,8 +296,9 @@ jobs:
                           color: selected
                               ? Colors.black
                               : const Color(0xFF777777),
-                          fontWeight:
-                              selected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: selected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -333,23 +347,27 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib/screens
+
+          cd clean_ejab_app/lib/screens
 
           cat > home_feed_screen.dart <<'DART'
           import 'package:flutter/material.dart';
-
           import 'search_screen.dart';
 
           class HomeFeedScreen extends StatefulWidget {
             const HomeFeedScreen({super.key});
 
             @override
-            State<HomeFeedScreen> createState() => _HomeFeedScreenState();
+            State<HomeFeedScreen> createState() =>
+                _HomeFeedScreenState();
           }
 
-          class _HomeFeedScreenState extends State<HomeFeedScreen> {
+          class _HomeFeedScreenState
+              extends State<HomeFeedScreen> {
+
             bool liked = false;
             bool saved = false;
+
             int likes = 3179;
 
             void toggleLike() {
@@ -374,6 +392,7 @@ jobs:
                 backgroundColor: Colors.black,
                 body: Stack(
                   children: [
+
                     Positioned.fill(
                       child: Container(
                         decoration: const BoxDecoration(
@@ -392,89 +411,94 @@ jobs:
                           child: Icon(
                             Icons.play_circle_outline,
                             size: 82,
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color:
+                                Colors.white.withOpacity(0.25),
                           ),
                         ),
                       ),
                     ),
+
                     SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.live_tv_outlined,
-                                color: Colors.white,
-                                size: 29,
-                              ),
+                      child: Row(
+                        children: [
+
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.live_tv_outlined,
+                              color: Colors.white,
+                              size: 29,
                             ),
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                children: const [
-                                  Text(
-                                    'لك',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                          ),
+
+                          const Expanded(
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'لك',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight:
+                                        FontWeight.bold,
                                   ),
-                                  SizedBox(width: 25),
-                                  Text(
-                                    'أتابعه',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 17,
-                                    ),
+                                ),
+                                SizedBox(width: 25),
+                                Text(
+                                  'أتابعه',
+                                  style: TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 17,
                                   ),
-                                  SizedBox(width: 25),
-                                  Text(
-                                    'المجتمع',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 17,
-                                    ),
+                                ),
+                                SizedBox(width: 25),
+                                Text(
+                                  'المجتمع',
+                                  style: TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 17,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const SearchScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.search,
-                                color: Colors.white,
-                                size: 31,
-                              ),
+                          ),
+
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const SearchScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.search,
+                              color: Colors.white,
+                              size: 31,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
+
                     Positioned(
                       right: 12,
                       bottom: 120,
                       child: Column(
                         children: [
+
                           _action(
                             icon: Icons.person,
                             text: '+',
                             isAvatar: true,
                           ),
+
                           const SizedBox(height: 18),
+
                           GestureDetector(
                             onTap: toggleLike,
                             child: Column(
@@ -490,7 +514,8 @@ jobs:
                                 ),
                                 Text(
                                   '$likes',
-                                  style: const TextStyle(
+                                  style:
+                                      const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
                                   ),
@@ -498,7 +523,9 @@ jobs:
                               ],
                             ),
                           ),
+
                           const SizedBox(height: 18),
+
                           GestureDetector(
                             onTap: openComments,
                             child: _action(
@@ -506,7 +533,9 @@ jobs:
                               text: '33',
                             ),
                           ),
+
                           const SizedBox(height: 18),
+
                           GestureDetector(
                             onTap: () {
                               setState(() {
@@ -520,7 +549,9 @@ jobs:
                               text: '171',
                             ),
                           ),
+
                           const SizedBox(height: 18),
+
                           _action(
                             icon: Icons.reply_rounded,
                             text: '22',
@@ -528,53 +559,45 @@ jobs:
                         ],
                       ),
                     ),
+
                     Positioned(
                       right: 18,
                       left: 90,
                       bottom: 28,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.end,
                         children: const [
+
                           Text(
-                            'Boxing.sr',
+                            'Ejab',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              fontWeight:
+                                  FontWeight.bold,
                             ),
                           ),
+
                           SizedBox(height: 7),
+
                           Text(
-                            'Price Nassem 👑 #foryoupage #boxingtok',
+                            'مرحباً بك في تطبيق إعجاب ❤️',
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           ),
+
                           SizedBox(height: 5),
+
                           Text(
-                            '#pricenassem #allahhuakbar #boxing',
+                            '#إعجاب #Ejab #foryou',
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'أشار المبدع إلى أنه من إنتاج الذكاء الاصطناعي',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'انظر الترجمة',
-                            style: TextStyle(
-                              color: Colors.white54,
-                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -592,6 +615,7 @@ jobs:
             }) {
               return Column(
                 children: [
+
                   Container(
                     width: isAvatar ? 52 : 48,
                     height: isAvatar ? 52 : 48,
@@ -603,16 +627,21 @@ jobs:
                     ),
                     child: Icon(
                       icon,
-                      color: isAvatar ? Colors.black : Colors.white,
+                      color: isAvatar
+                          ? Colors.black
+                          : Colors.white,
                       size: isAvatar ? 31 : 36,
                     ),
                   ),
+
                   if (isAvatar)
                     Container(
-                      margin: const EdgeInsets.only(top: -12),
+                      margin:
+                          const EdgeInsets.only(top: -12),
                       width: 27,
                       height: 27,
-                      decoration: const BoxDecoration(
+                      decoration:
+                          const BoxDecoration(
                         color: Color(0xFFFE2C55),
                         shape: BoxShape.circle,
                       ),
@@ -622,6 +651,7 @@ jobs:
                         size: 20,
                       ),
                     ),
+
                   Text(
                     text,
                     style: const TextStyle(
@@ -643,107 +673,130 @@ jobs:
                 initialChildSize: 0.65,
                 minChildSize: 0.35,
                 maxChildSize: 0.9,
-                builder: (context, controller) {
+                builder:
+                    (context, controller) {
                   return Container(
-                    decoration: const BoxDecoration(
+                    decoration:
+                        const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(
+                      borderRadius:
+                          BorderRadius.vertical(
                         top: Radius.circular(25),
                       ),
                     ),
                     child: Column(
                       children: [
+
                         const SizedBox(height: 12),
+
                         Row(
                           children: [
+
                             IconButton(
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: () =>
+                                  Navigator.pop(
+                                      context),
                               icon: const Icon(
                                 Icons.close,
-                                color: Colors.black54,
                               ),
                             ),
+
                             const Expanded(
                               child: Center(
                                 child: Text(
-                                  '33 تعليقًا',
-                                  style: TextStyle(
-                                    color: Colors.black,
+                                  'التعليقات',
+                                  style:
+                                      TextStyle(
                                     fontSize: 17,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight:
+                                        FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
+
                             const SizedBox(width: 48),
                           ],
                         ),
+
                         const Divider(height: 1),
+
                         Expanded(
                           child: ListView(
                             controller: controller,
                             children: const [
+
                               _Comment(
-                                name: 'مستخدم نجمة',
-                                text: 'الله أكبر الله أكبر',
+                                name: 'مستخدم إعجاب',
+                                text:
+                                    'ما شاء الله ❤️',
                                 likes: '4',
                               ),
+
                               _Comment(
-                                name: 'Haitam dj',
-                                text: 'ما شاء الله عليك',
+                                name: 'Ejab User',
+                                text:
+                                    'رائع جداً 🔥',
                                 likes: '3',
                               ),
+
                               _Comment(
-                                name: 'yönsé',
-                                text: 'نقول إلى الجنة 🥰🥰⚡',
+                                name: 'محمد',
+                                text:
+                                    'استمر يا بطل',
                                 likes: '2',
-                              ),
-                              _Comment(
-                                name: 'Lashari',
-                                text: 'This is the best boxer ❤️',
-                                likes: '2',
-                              ),
-                              _Comment(
-                                name: 'mustafaeIach',
-                                text: '🥰🥰🥰',
-                                likes: '1',
                               ),
                             ],
                           ),
                         ),
+
                         SafeArea(
                           top: false,
                           child: Container(
-                            padding: const EdgeInsets.all(10),
-                            color: Colors.white,
+                            padding:
+                                const EdgeInsets.all(
+                                    10),
                             child: Row(
                               children: [
-                                const Icon(
-                                  Icons.alternate_email,
-                                  color: Colors.black,
-                                ),
-                                const SizedBox(width: 10),
+
                                 Expanded(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding:
+                                        const EdgeInsets
+                                            .symmetric(
                                       horizontal: 15,
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F1F1),
-                                      borderRadius: BorderRadius.circular(25),
+                                    decoration:
+                                        BoxDecoration(
+                                      color:
+                                          const Color(
+                                              0xFFF1F1F1),
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(
+                                                  25),
                                     ),
-                                    child: const TextField(
-                                      decoration: InputDecoration(
-                                        hintText: 'إضافة تعليق...',
-                                        border: InputBorder.none,
+                                    child:
+                                        const TextField(
+                                      decoration:
+                                          InputDecoration(
+                                        hintText:
+                                            'إضافة تعليق...',
+                                        border:
+                                            InputBorder
+                                                .none,
                                       ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+
+                                const SizedBox(
+                                    width: 8),
+
                                 const Icon(
-                                  Icons.image_outlined,
-                                  color: Colors.black,
+                                  Icons.send,
+                                  color:
+                                      Color(0xFFFE2C55),
                                 ),
                               ],
                             ),
@@ -771,54 +824,60 @@ jobs:
             @override
             Widget build(BuildContext context) {
               return Padding(
-                padding: const EdgeInsets.symmetric(
+                padding:
+                    const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 13,
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
+
                     const CircleAvatar(
                       radius: 21,
-                      backgroundColor: Color(0xFFE5E5E5),
+                      backgroundColor:
+                          Color(0xFFE5E5E5),
                       child: Icon(
                         Icons.person,
                         color: Colors.white,
                       ),
                     ),
+
                     const SizedBox(width: 10),
+
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.end,
                         children: [
+
                           Text(
                             name,
-                            style: const TextStyle(
+                            style:
+                                const TextStyle(
                               color: Colors.black54,
-                              fontWeight: FontWeight.bold,
+                              fontWeight:
+                                  FontWeight.bold,
                             ),
                           ),
+
                           const SizedBox(height: 3),
+
                           Text(
                             text,
-                            textAlign: TextAlign.right,
-                            style: const TextStyle(
+                            textAlign:
+                                TextAlign.right,
+                            style:
+                                const TextStyle(
                               color: Colors.black,
                               fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'رد',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
+
                     Column(
                       children: [
                         const Icon(
@@ -827,7 +886,8 @@ jobs:
                         ),
                         Text(
                           likes,
-                          style: const TextStyle(
+                          style:
+                              const TextStyle(
                             color: Colors.grey,
                             fontSize: 11,
                           ),
@@ -848,7 +908,8 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib/screens
+
+          cd clean_ejab_app/lib/screens
 
           cat > search_screen.dart <<'DART'
           import 'package:flutter/material.dart';
@@ -857,37 +918,31 @@ jobs:
             const SearchScreen({super.key});
 
             @override
-            State<SearchScreen> createState() => _SearchScreenState();
+            State<SearchScreen> createState() =>
+                _SearchScreenState();
           }
 
-          class _SearchScreenState extends State<SearchScreen> {
+          class _SearchScreenState
+              extends State<SearchScreen> {
+
             final TextEditingController controller =
                 TextEditingController();
 
             final List<String> history = [
-              'ميسي',
-              'انتصارات نسيم حميد',
-              'مدام عاد النفس خضراء يارب حولي بعدها كامله',
-              'لحظة دخول ايمن المساوي',
-              'اعلانات مصطفى السومري مضحكه',
+              'مستخدمين إعجاب',
+              'فيديوهات',
+              'أصدقاء',
             ];
 
             final List<String> suggestions = [
-              'naseem hamed vs kevin kelly',
-              'نسيم حميد بطل العالم',
-              'هزيمة نسيم حميد امام المكسيكي',
-              'ادم نسيم حميد',
-              'حميد العالمي',
-              'فوز نسيم حميد على انطونيو باريرا',
-              'محمد صلاح في تركيا',
-              'prince naseem and brendan ingle',
+              'أفضل الفيديوهات',
+              'مقاطع مضحكة',
+              'رياضة',
+              'موسيقى',
+              'ألعاب',
+              'ترند إعجاب',
+              'محتوى جديد',
             ];
-
-            @override
-            void dispose() {
-              controller.dispose();
-              super.dispose();
-            }
 
             @override
             Widget build(BuildContext context) {
@@ -896,31 +951,43 @@ jobs:
                 body: SafeArea(
                   child: Column(
                     children: [
+
                       Padding(
-                        padding: const EdgeInsets.all(10),
+                        padding:
+                            const EdgeInsets.all(10),
                         child: Row(
                           children: [
+
                             TextButton(
                               onPressed: () =>
-                                  Navigator.pop(context),
+                                  Navigator.pop(
+                                      context),
                               child: const Text(
                                 'بحث',
                                 style: TextStyle(
-                                  color: Color(0xFFFE2C55),
-                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      Color(0xFFFE2C55),
+                                  fontWeight:
+                                      FontWeight.bold,
                                 ),
                               ),
                             ),
+
                             Expanded(
                               child: Container(
                                 height: 46,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F1F1),
+                                decoration:
+                                    BoxDecoration(
+                                  color:
+                                      const Color(
+                                          0xFFF1F1F1),
                                   borderRadius:
-                                      BorderRadius.circular(12),
+                                      BorderRadius
+                                          .circular(12),
                                 ),
                                 child: TextField(
-                                  controller: controller,
+                                  controller:
+                                      controller,
                                   textDirection:
                                       TextDirection.rtl,
                                   decoration:
@@ -928,78 +995,74 @@ jobs:
                                     hintText: 'بحث',
                                     prefixIcon:
                                         Icon(Icons.search),
-                                    suffixIcon: Icon(
-                                      Icons.camera_alt_outlined,
-                                    ),
-                                    border: InputBorder.none,
+                                    border:
+                                        InputBorder.none,
                                   ),
                                 ),
                               ),
                             ),
+
                             IconButton(
                               onPressed: () =>
-                                  Navigator.pop(context),
+                                  Navigator.pop(
+                                      context),
                               icon: const Icon(
                                 Icons.arrow_forward,
                                 size: 30,
-                                color: Colors.black,
                               ),
                             ),
                           ],
                         ),
                       ),
+
                       Expanded(
                         child: ListView(
                           children: [
-                            for (final item in history)
+
+                            for (final item
+                                in history)
                               ListTile(
-                                leading: const Icon(
-                                  Icons.close,
+                                leading:
+                                    const Icon(
+                                  Icons.history,
                                   color: Colors.grey,
                                 ),
                                 title: Text(
                                   item,
-                                  textAlign: TextAlign.right,
-                                ),
-                                trailing: const Icon(
-                                  Icons.history,
-                                  color: Colors.grey,
+                                  textAlign:
+                                      TextAlign.right,
                                 ),
                               ),
+
                             const Divider(),
+
                             const Padding(
-                              padding: EdgeInsets.all(16),
+                              padding:
+                                  EdgeInsets.all(16),
                               child: Text(
                                 'قد يعجبك',
-                                textAlign: TextAlign.right,
+                                textAlign:
+                                    TextAlign.right,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight.bold,
                                   fontSize: 17,
                                 ),
                               ),
                             ),
-                            for (int i = 0;
-                                i < suggestions.length;
-                                i++)
+
+                            for (final item
+                                in suggestions)
                               ListTile(
-                                leading: Icon(
-                                  Icons.circle,
-                                  size: 8,
-                                  color: i < 2
-                                      ? const Color(0xFFFE2C55)
-                                      : Colors.grey,
+                                leading:
+                                    const Icon(
+                                  Icons.search,
+                                  color: Colors.grey,
                                 ),
                                 title: Text(
-                                  suggestions[i],
-                                  textAlign: TextAlign.right,
-                                ),
-                                subtitle: const Text(
-                                  'شاهدته للتو',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
+                                  item,
+                                  textAlign:
+                                      TextAlign.right,
                                 ),
                               ),
                           ],
@@ -1014,1189 +1077,117 @@ jobs:
           DART
 
       # =========================================================
-      # 9. Inbox
+      # 9. Friends
       # =========================================================
-      - name: Create Inbox Screen
+      - name: Create Friends Screen
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib/screens
 
-          cat > inbox_screen.dart <<'DART'
+          cd clean_ejab_app/lib/screens
+
+          cat > friends_screen.dart <<'DART'
           import 'package:flutter/material.dart';
 
-          import 'chat_detail_screen.dart';
-
-          class InboxScreen extends StatelessWidget {
-            const InboxScreen({super.key});
+          class FriendsScreen extends StatelessWidget {
+            const FriendsScreen({super.key});
 
             @override
             Widget build(BuildContext context) {
-              final messages = [
-                ['متابعون جدد', 'فارس بدأ في متابعتك.', '19'],
-                ['النشاط', 'Jamal وآخرون قاموا بزيارة ملفك.', '13'],
-                ['البث المباشر', 'شارك بثًا مباشرًا!', '43'],
-                ['الفيديوهات', 'شارك فيديو.', '67'],
-                ['إشعارات النظام', 'تحديث الحساب وإرشادات جديدة.', ''],
-                ['علي الاحمدي ALI Al-Ahmadi', 'تم الإرسال', '2'],
-                ['صقر الجبل 🦅', 'يدعوك للانضمام كضيف', '2'],
-                ['محمد هزاع', 'قل مرحبًا لمحمد هزاع', ''],
-                ['ابوالعز', 'قل مرحبًا بابوالعز', ''],
-              ];
-
               return Scaffold(
                 backgroundColor: Colors.white,
                 appBar: AppBar(
                   title: const Text(
-                    'صندوق الوارد',
+                    'الأصدقاء',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   centerTitle: true,
-                  leading: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.search),
-                  ),
-                  actions: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.person_add_alt_1,
-                      ),
-                    ),
-                  ],
-                ),
-                body: ListView(
-                  children: [
-                    SizedBox(
-                      height: 125,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        reverse: true,
-                        children: const [
-                          _Story(
-                            name: 'إنشاء',
-                            icon: Icons.add,
-                          ),
-                          _Story(name: 'فيصل'),
-                          _Story(name: 'ماريا 🌹'),
-                          _Story(name: 'ليالي أجواء'),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                    for (final item in messages)
-                      ListTile(
-                        contentPadding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 5,
-                        ),
-                        leading: item[2].isEmpty
-                            ? const CircleAvatar(
-                                backgroundColor:
-                                    Color(0xFFE8E8E8),
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : CircleAvatar(
-                                backgroundColor:
-                                    const Color(0xFFE8E8E8),
-                                child: Text(
-                                  item[2],
-                                  style: const TextStyle(
-                                    color:
-                                        Color(0xFFFE2C55),
-                                    fontWeight:
-                                        FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                        title: Text(
-                          item[0],
-                          textAlign: TextAlign.right,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          item[1],
-                          textAlign: TextAlign.right,
-                        ),
-                        trailing: const CircleAvatar(
-                          backgroundColor: Color(0xFFE8E8E8),
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.white,
-                          ),
-                        ),
-                        onTap: item[0].contains('علي')
-                            ? () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const ChatDetailScreen(
-                                      username:
-                                          'علي الاحمدي',
-                                    ),
-                                  ),
-                                );
-                              }
-                            : null,
-                      ),
-                  ],
-                ),
-              );
-            }
-          }
-
-          class _Story extends StatelessWidget {
-            final String name;
-            final IconData? icon;
-
-            const _Story({
-              required this.name,
-              this.icon,
-            });
-
-            @override
-            Widget build(BuildContext context) {
-              return SizedBox(
-                width: 105,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 78,
-                        height: 78,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF25BFEA),
-                            width: 4,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          backgroundColor:
-                              const Color(0xFFE6E6E6),
-                          child: Icon(
-                            icon ?? Icons.person,
-                            size: 35,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-          }
-          DART
-
-      # =========================================================
-      # 10. Chat
-      # =========================================================
-      - name: Create Chat Screen
-        shell: bash
-        run: |
-          set -e
-          cd clean_najma_app/lib/screens
-
-          cat > chat_detail_screen.dart <<'DART'
-          import 'package:flutter/material.dart';
-
-          class ChatDetailScreen extends StatefulWidget {
-            final String username;
-
-            const ChatDetailScreen({
-              super.key,
-              required this.username,
-            });
-
-            @override
-            State<ChatDetailScreen> createState() =>
-                _ChatDetailScreenState();
-          }
-
-          class _ChatDetailScreenState
-              extends State<ChatDetailScreen> {
-            final TextEditingController controller =
-                TextEditingController();
-
-            final List<String> messages = [];
-
-            void send() {
-              final text = controller.text.trim();
-
-              if (text.isEmpty) {
-                return;
-              }
-
-              setState(() {
-                messages.add(text);
-                controller.clear();
-              });
-            }
-
-            @override
-            void dispose() {
-              controller.dispose();
-              super.dispose();
-            }
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                backgroundColor: Colors.white,
-                appBar: AppBar(
-                  leading: IconButton(
-                    onPressed: () =>
-                        Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-                  title: Text(widget.username),
-                  centerTitle: true,
-                  actions: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.more_horiz),
-                    ),
-                  ],
-                ),
-                body: Column(
-                  children: [
-                    Expanded(
-                      child: messages.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                children: [
-                                  const CircleAvatar(
-                                    radius: 42,
-                                    backgroundColor:
-                                        Color(0xFFE5E5E5),
-                                    child: Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    widget.username,
-                                    style: const TextStyle(
-                                      fontWeight:
-                                          FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : ListView.builder(
-                              padding:
-                                  const EdgeInsets.all(15),
-                              itemCount: messages.length,
-                              itemBuilder: (_, index) {
-                                return Align(
-                                  alignment:
-                                      Alignment.centerLeft,
-                                  child: Container(
-                                    margin:
-                                        const EdgeInsets.only(
-                                      bottom: 10,
-                                    ),
-                                    padding:
-                                        const EdgeInsets.all(
-                                      12,
-                                    ),
-                                    decoration:
-                                        BoxDecoration(
-                                      color: const Color(
-                                        0xFFF1F1F1,
-                                      ),
-                                      borderRadius:
-                                          BorderRadius.circular(
-                                        18,
-                                      ),
-                                    ),
-                                    child:
-                                        Text(messages[index]),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                    SafeArea(
-                      top: false,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        color: const Color(0xFFF5F5F5),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.camera_alt_outlined,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextField(
-                                controller: controller,
-                                decoration: InputDecoration(
-                                  hintText: 'رسالة...',
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border:
-                                      OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(
-                                      25,
-                                    ),
-                                    borderSide:
-                                        BorderSide.none,
-                                  ),
-                                ),
-                                onSubmitted: (_) => send(),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: send,
-                              icon: const Icon(
-                                Icons.send,
-                                color: Color(0xFFFE2C55),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-          }
-          DART
-
-      # =========================================================
-      # 11. Profile
-      # =========================================================
-      - name: Create Profile Screen
-        shell: bash
-        run: |
-          set -e
-          cd clean_najma_app/lib/screens
-
-          cat > profile_screen.dart <<'DART'
-          import 'package:flutter/material.dart';
-
-          import 'drawer_menu.dart';
-
-          class ProfileScreen extends StatelessWidget {
-            const ProfileScreen({super.key});
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                backgroundColor: Colors.white,
-                endDrawer: const DrawerMenu(),
-                appBar: AppBar(
-                  leading: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.person_add_alt,
-                    ),
-                  ),
-                  title: const Text(
-                    'Boxing.sr',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  centerTitle: true,
-                  actions: [
-                    Builder(
-                      builder: (context) {
-                        return IconButton(
-                          onPressed: () {
-                            Scaffold.of(context)
-                                .openEndDrawer();
-                          },
-                          icon: const Icon(Icons.menu),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                body: ListView(
-                  children: [
-                    const SizedBox(height: 18),
-                    const CircleAvatar(
-                      radius: 47,
-                      backgroundColor: Colors.black,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 55,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Center(
-                      child: Text(
-                        'Boxing.sr',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const Center(
-                      child: Text(
-                        '@boxing.sr8',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
-                      children: [
-                        _Stat(
-                          number: '50',
-                          title: 'أتابعه',
-                        ),
-                        _Stat(
-                          number: '-',
-                          title: 'متابعين',
-                        ),
-                        _Stat(
-                          number: '101.3 ألف',
-                          title: 'تسجيلات الإعجاب',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 17),
-                    Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color(0xFFFE2C55),
-                            foregroundColor: Colors.white,
-                            minimumSize:
-                                const Size(150, 48),
-                            shape:
-                                RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(7),
-                            ),
-                          ),
-                          child: const Text(
-                            'متابعة',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          onPressed: () {},
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            minimumSize:
-                                const Size(150, 48),
-                            side: BorderSide.none,
-                            backgroundColor:
-                                const Color(0xFFF2F2F2),
-                            shape:
-                                RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(7),
-                            ),
-                          ),
-                          child: const Text(
-                            'مراسلة',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    const Center(
-                      child: Text(
-                        '" Alhamdulillah " 🌙🏅',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    const Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.grid_view),
-                        SizedBox(width: 35),
-                        Icon(Icons.favorite_border),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(2),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 2,
-                        mainAxisSpacing: 2,
-                      ),
-                      itemCount: 9,
-                      itemBuilder: (_, index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Colors.grey.shade900,
-                                Colors.grey.shade700,
-                              ],
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.play_arrow,
-                            color: Colors.white70,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            }
-          }
-
-          class _Stat extends StatelessWidget {
-            final String number;
-            final String title;
-
-            const _Stat({
-              required this.number,
-              required this.title,
-            });
-
-            @override
-            Widget build(BuildContext context) {
-              return SizedBox(
-                width: 110,
-                child: Column(
-                  children: [
-                    Text(
-                      number,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-          }
-          DART
-
-      # =========================================================
-      # 12. Drawer Menu
-      # =========================================================
-      - name: Create Drawer Menu
-        shell: bash
-        run: |
-          set -e
-          cd clean_najma_app/lib/screens
-
-          cat > drawer_menu.dart <<'DART'
-          import 'package:flutter/material.dart';
-
-          import 'settings_privacy_screen.dart';
-
-          class DrawerMenu extends StatelessWidget {
-            const DrawerMenu({super.key});
-
-            @override
-            Widget build(BuildContext context) {
-              return Drawer(
-                backgroundColor: Colors.white,
-                width:
-                    MediaQuery.of(context).size.width * 0.86,
-                child: SafeArea(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      const SizedBox(height: 18),
-                      const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 28),
-                        child: Text(
-                          'الأصول',
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      _item(
-                        icon: Icons
-                            .account_balance_wallet_outlined,
-                        title: 'رصيد',
-                        onTap: () {
-                          _showMessage(
-                            context,
-                            'رصيد المحفظة سيظهر هنا',
-                          );
-                        },
-                      ),
-                      const Divider(),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          'الأدوات الشخصية',
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      _item(
-                        icon: Icons.history,
-                        title: 'مركز الأنشطة',
-                        onTap: () {
-                          _showMessage(
-                            context,
-                            'مركز الأنشطة',
-                          );
-                        },
-                      ),
-                      _item(
-                        icon:
-                            Icons.cloud_download_outlined,
-                        title:
-                            'فيديوهات دون اتصال بالإنترنت',
-                        onTap: () {
-                          _showMessage(
-                            context,
-                            'الفيديوهات المحفوظة دون اتصال',
-                          );
-                        },
-                      ),
-                      _item(
-                        icon: Icons.qr_code_2,
-                        title: 'رمز QR لديك',
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text(
-                                'رمز QR الخاص بك',
-                              ),
-                              content: const SizedBox(
-                                width: 200,
-                                height: 200,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.qr_code_2,
-                                    size: 170,
-                                  ),
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context),
-                                  child:
-                                      const Text('إغلاق'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      const Divider(),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          'أدوات الإبداع والأعمال',
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      _item(
-                        icon: Icons.auto_awesome,
-                        title: 'Najma Studio',
-                        onTap: () {
-                          _showMessage(
-                            context,
-                            'استوديو نجمة',
-                          );
-                        },
-                      ),
-                      _item(
-                        icon: Icons.settings_outlined,
-                        title: 'الإعدادات والخصوصية',
-                        onTap: () {
-                          Navigator.pop(context);
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const SettingsPrivacyScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            Widget _item({
-              required IconData icon,
-              required String title,
-              required VoidCallback onTap,
-            }) {
-              return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 25,
-                ),
-                leading: const Icon(
-                  Icons.chevron_left,
-                  color: Colors.grey,
-                ),
-                trailing: Icon(
-                  icon,
-                  color: Colors.black,
-                  size: 27,
-                ),
-                title: Text(
-                  title,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: onTap,
-              );
-            }
-
-            void _showMessage(
-              BuildContext context,
-              String message,
-            ) {
-              Navigator.pop(context);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    message,
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-              );
-            }
-          }
-          DART
-
-      # =========================================================
-      # 13. Settings & Privacy
-      # =========================================================
-      - name: Create Settings Privacy
-        shell: bash
-        run: |
-          set -e
-          cd clean_najma_app/lib/screens
-
-          cat > settings_privacy_screen.dart <<'DART'
-          import 'package:flutter/material.dart';
-
-          class SettingsPrivacyScreen extends StatelessWidget {
-            const SettingsPrivacyScreen({super.key});
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                backgroundColor:
-                    const Color(0xFFF5F5F5),
-                appBar: AppBar(
-                  title: const Text(
-                    'الإعدادات والخصوصية',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  centerTitle: true,
-                  leading: IconButton(
-                    onPressed: () =>
-                        Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back,
-                    ),
-                  ),
                 ),
                 body: ListView(
                   padding:
-                      const EdgeInsets.only(bottom: 30),
+                      const EdgeInsets.all(18),
                   children: [
-                    _section(
-                      title: 'النشاط',
-                      items: [
-                        _row(
-                          Icons.video_collection_outlined,
-                          'إدارة المنشورات',
-                        ),
-                        _row(
-                          Icons.video_camera_back_outlined,
-                          'تفضيلات المحتوى',
-                        ),
-                        _row(
-                          Icons.live_tv_outlined,
-                          'LIVE',
-                        ),
-                        _row(
-                          Icons.notifications_none,
-                          'الإشعارات',
-                        ),
-                        _row(
-                          Icons.hourglass_empty,
-                          'الوقت والرفاهية',
-                          dot: true,
-                        ),
-                        _row(
-                          Icons.family_restroom,
-                          'ربط الحسابات للعائلة',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'الحساب',
-                      items: [
-                        _row(
-                          Icons.person_outline,
-                          'الحساب',
-                        ),
-                        _row(
-                          Icons.shield_outlined,
-                          'الأمان والأذونات',
-                        ),
-                        _row(
-                          Icons.share_outlined,
-                          'مشاركة الملف الشخصي',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'الظهور',
-                      items: [
-                        _row(
-                          Icons.lock_outline,
-                          'حساب خاص',
-                        ),
-                        _row(
-                          Icons.block,
-                          'الحسابات المحظورة',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'التفاعلات',
-                      items: [
-                        _row(
-                          Icons.alternate_email,
-                          'الذكر',
-                        ),
-                        _row(
-                          Icons.send_outlined,
-                          'الرسائل الخاصة',
-                        ),
-                        _row(
-                          Icons.repeat,
-                          'إعادة استخدام المحتوى',
-                        ),
-                        _row(
-                          Icons.link,
-                          'عرض الملف الشخصي عند مشاركة الروابط',
-                          value: 'تشغيل',
-                        ),
-                        _row(
-                          Icons.download,
-                          'التنزيلات',
-                          value: 'تشغيل',
-                        ),
-                        _row(
-                          Icons.people_outline,
-                          'قائمة المتابعة',
-                          value: 'لك فقط',
-                        ),
-                        _row(
-                          Icons.favorite,
-                          'فيديوهات أعجبتك',
-                          value: 'لك فقط',
-                        ),
-                        _row(
-                          Icons.visibility_outlined,
-                          'المشاهدون',
-                          value: 'تشغيل',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'المحتوى والعرض',
-                      items: [
-                        _row(
-                          Icons.music_note,
-                          'موسيقى',
-                        ),
-                        _row(
-                          Icons.inbox_outlined,
-                          'صندوق الوارد والمراسلة',
-                        ),
-                        _row(
-                          Icons.history,
-                          'مركز الأنشطة',
-                        ),
-                        _row(
-                          Icons.groups_outlined,
-                          'عناصر التحكم في الجمهور',
-                        ),
-                        _row(
-                          Icons.campaign_outlined,
-                          'الإعلانات',
-                        ),
-                        _row(
-                          Icons.play_circle_outline,
-                          'تشغيل',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'ذاكرة التخزين المؤقت والبيانات',
-                      items: [
-                        _row(
-                          Icons.cloud_download_outlined,
-                          'فيديوهات دون اتصال بالإنترنت',
-                        ),
-                        _row(
-                          Icons.delete_outline,
-                          'تحرير المساحة',
-                        ),
-                        _row(
-                          Icons.data_saver_off,
-                          'توفير البيانات',
-                        ),
-                        _row(
-                          Icons.image_outlined,
-                          'الخلفية',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'الدعم وحول التطبيق',
-                      items: [
-                        _row(
-                          Icons.headset_mic_outlined,
-                          'مركز المساعدة',
-                        ),
-                        _row(
-                          Icons.lock_outline,
-                          'مركز الخصوصية',
-                        ),
-                        _row(
-                          Icons.info_outline,
-                          'الشروط والسياسات',
-                        ),
-                      ],
-                    ),
-                    _section(
-                      title: 'تسجيل الدخول',
-                      items: [
-                        _row(
-                          Icons.switch_account,
-                          'تبديل الحساب',
-                        ),
-                        _row(
-                          Icons.logout,
-                          'تسجيل الخروج',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    const Center(
-                      child: Text(
-                        'Najma v1.0.0',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 13,
-                        ),
+
+                    const Text(
+                      'اكتشف أصدقاء جدد',
+                      textAlign:
+                          TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight:
+                            FontWeight.bold,
                       ),
                     ),
+
+                    const SizedBox(height: 18),
+
+                    for (int i = 1; i <= 6; i++)
+                      Card(
+                        elevation: 0,
+                        color:
+                            const Color(0xFFF7F7F7),
+                        child: ListTile(
+
+                          leading:
+                              ElevatedButton(
+                            onPressed: () {},
+                            style:
+                                ElevatedButton
+                                    .styleFrom(
+                              backgroundColor:
+                                  const Color(
+                                      0xFFFE2C55),
+                              foregroundColor:
+                                  Colors.white,
+                            ),
+                            child:
+                                const Text(
+                              'متابعة',
+                            ),
+                          ),
+
+                          trailing:
+                              const CircleAvatar(
+                            backgroundColor:
+                                Color(0xFFE5E5E5),
+                            child: Icon(
+                              Icons.person,
+                              color:
+                                  Colors.white,
+                            ),
+                          ),
+
+                          title: Text(
+                            'مستخدم إعجاب $i',
+                            textAlign:
+                                TextAlign.right,
+                          ),
+
+                          subtitle: Text(
+                            '@ejab_user$i',
+                            textAlign:
+                                TextAlign.right,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              );
-            }
-
-            Widget _section({
-              required String title,
-              required List<Widget> items,
-            }) {
-              return Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      20,
-                      18,
-                      20,
-                      8,
-                    ),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin:
-                        const EdgeInsets.symmetric(
-                      horizontal: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      children: items,
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            Widget _row(
-              IconData icon,
-              String title, {
-              String? value,
-              bool dot = false,
-            }) {
-              return ListTile(
-                minVerticalPadding: 9,
-                leading: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (dot)
-                      Container(
-                        width: 9,
-                        height: 9,
-                        margin:
-                            const EdgeInsets.only(
-                          right: 8,
-                        ),
-                        decoration:
-                            const BoxDecoration(
-                          color: Color(0xFFFE2C55),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    const Icon(
-                      Icons.chevron_left,
-                      color: Colors.grey,
-                    ),
-                  ],
-                ),
-                trailing: Icon(
-                  icon,
-                  color: Colors.grey,
-                  size: 24,
-                ),
-                title: Text(
-                  title,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: value == null
-                    ? null
-                    : Text(
-                        value,
-                        textAlign: TextAlign.left,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                      ),
-                onTap: () {},
               );
             }
           }
           DART
 
       # =========================================================
-      # 14. Create Post
+      # 10. Create Post
       # =========================================================
       - name: Create Post Screen
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib/screens
+
+          cd clean_ejab_app/lib/screens
 
           cat > create_post_screen.dart <<'DART'
           import 'package:flutter/material.dart';
@@ -2211,6 +1202,7 @@ jobs:
 
           class _CreatePostScreenState
               extends State<CreatePostScreen> {
+
             int selected = 2;
 
             @override
@@ -2220,24 +1212,31 @@ jobs:
                 body: SafeArea(
                   child: Stack(
                     children: [
+
                       Positioned.fill(
                         child: Container(
-                          color: const Color(0xFF111111),
+                          color:
+                              const Color(0xFF111111),
                           child: const Center(
                             child: Column(
                               mainAxisAlignment:
                                   MainAxisAlignment.center,
                               children: [
+
                                 Icon(
                                   Icons.videocam_outlined,
-                                  color: Colors.white38,
+                                  color:
+                                      Colors.white38,
                                   size: 80,
                                 ),
+
                                 SizedBox(height: 12),
+
                                 Text(
-                                  'معاينة الكاميرا',
+                                  'إنشاء فيديو',
                                   style: TextStyle(
-                                    color: Colors.white54,
+                                    color:
+                                        Colors.white54,
                                     fontSize: 17,
                                   ),
                                 ),
@@ -2246,12 +1245,14 @@ jobs:
                           ),
                         ),
                       ),
+
                       Positioned(
                         top: 10,
                         left: 10,
                         child: IconButton(
                           onPressed: () =>
-                              Navigator.pop(context),
+                              Navigator.pop(
+                                  context),
                           icon: const Icon(
                             Icons.close,
                             color: Colors.white,
@@ -2259,29 +1260,38 @@ jobs:
                           ),
                         ),
                       ),
-                      const Positioned(
+
+                      Positioned(
                         top: 15,
                         right: 15,
                         child: Column(
-                          children: [
+                          children: const [
+
                             Icon(
-                              Icons.flip_camera_ios_outlined,
+                              Icons
+                                  .flip_camera_ios_outlined,
                               color: Colors.white,
                               size: 28,
                             ),
+
                             SizedBox(height: 25),
+
                             Icon(
                               Icons.flash_on_outlined,
                               color: Colors.white,
                               size: 28,
                             ),
+
                             SizedBox(height: 25),
+
                             Icon(
                               Icons.timer_outlined,
                               color: Colors.white,
                               size: 28,
                             ),
+
                             SizedBox(height: 25),
+
                             Icon(
                               Icons.speed,
                               color: Colors.white,
@@ -2290,15 +1300,18 @@ jobs:
                           ],
                         ),
                       ),
+
                       Positioned(
                         left: 0,
                         right: 0,
                         bottom: 25,
                         child: Column(
                           children: [
+
                             Row(
                               mainAxisAlignment:
-                                  MainAxisAlignment.center,
+                                  MainAxisAlignment
+                                      .center,
                               children: [
                                 _mode('نص', 0),
                                 _mode('صورة', 1),
@@ -2307,14 +1320,21 @@ jobs:
                                 _mode('10 د', 4),
                               ],
                             ),
-                            const SizedBox(height: 20),
+
+                            const SizedBox(
+                                height: 20),
+
                             Container(
                               width: 78,
                               height: 78,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
+                              decoration:
+                                  BoxDecoration(
+                                shape:
+                                    BoxShape.circle,
+                                border:
+                                    Border.all(
+                                  color:
+                                      Colors.white,
                                   width: 5,
                                 ),
                               ),
@@ -2324,8 +1344,11 @@ jobs:
                                   height: 62,
                                   decoration:
                                       const BoxDecoration(
-                                    color: Color(0xFFFE2C55),
-                                    shape: BoxShape.circle,
+                                    color:
+                                        Color(
+                                            0xFFFE2C55),
+                                    shape:
+                                        BoxShape.circle,
                                   ),
                                 ),
                               ),
@@ -2375,81 +1398,205 @@ jobs:
           DART
 
       # =========================================================
-      # 15. Friends
+      # 11. Inbox
       # =========================================================
-      - name: Create Friends Screen
+      - name: Create Inbox Screen
         shell: bash
         run: |
           set -e
-          cd clean_najma_app/lib/screens
 
-          cat > friends_screen.dart <<'DART'
+          cd clean_ejab_app/lib/screens
+
+          cat > inbox_screen.dart <<'DART'
           import 'package:flutter/material.dart';
+          import 'chat_detail_screen.dart';
 
-          class FriendsScreen extends StatelessWidget {
-            const FriendsScreen({super.key});
+          class InboxScreen extends StatelessWidget {
+            const InboxScreen({super.key});
 
             @override
             Widget build(BuildContext context) {
+
+              final messages = [
+                [
+                  'متابعون جدد',
+                  'لديك متابع جديد',
+                ],
+                [
+                  'النشاط',
+                  'لديك نشاط جديد',
+                ],
+                [
+                  'إشعارات إعجاب',
+                  'مرحباً بك في إعجاب',
+                ],
+                [
+                  'مستخدم إعجاب',
+                  'أرسل لك رسالة',
+                ],
+              ];
+
               return Scaffold(
-                backgroundColor: Colors.white,
+                backgroundColor:
+                    Colors.white,
+
                 appBar: AppBar(
                   title: const Text(
-                    'الأصدقاء',
+                    'صندوق الوارد',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
                   centerTitle: true,
-                ),
-                body: ListView(
-                  padding: const EdgeInsets.all(18),
-                  children: [
-                    const Text(
-                      'اكتشف أصدقاء جدد',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                  actions: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.person_add_alt_1,
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    for (int i = 1; i <= 6; i++)
-                      Card(
-                        elevation: 0,
-                        color: const Color(0xFFF7F7F7),
-                        child: ListTile(
-                          leading: ElevatedButton(
-                            onPressed: () {},
-                            style:
-                                ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  const Color(0xFFFE2C55),
-                              foregroundColor:
-                                  Colors.white,
-                            ),
-                            child:
-                                const Text('متابعة'),
+                  ],
+                ),
+
+                body: ListView(
+                  children: [
+
+                    SizedBox(
+                      height: 125,
+                      child: ListView(
+                        scrollDirection:
+                            Axis.horizontal,
+                        reverse: true,
+                        children: const [
+                          _Story(
+                            name: 'إنشاء',
+                            icon: Icons.add,
                           ),
-                          trailing:
-                              const CircleAvatar(
-                            backgroundColor:
-                                Color(0xFFE5E5E5),
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.white,
-                            ),
+                          _Story(
+                            name: 'أصدقاؤك',
                           ),
-                          title: Text(
-                            'مستخدم نجمة $i',
-                            textAlign: TextAlign.right,
+                          _Story(
+                            name: 'مستخدم جديد',
                           ),
-                          subtitle: Text(
-                            '@najma_user$i',
-                            textAlign: TextAlign.right,
+                        ],
+                      ),
+                    ),
+
+                    const Divider(),
+
+                    for (final item in messages)
+                      ListTile(
+                        contentPadding:
+                            const EdgeInsets
+                                .symmetric(
+                          horizontal: 20,
+                          vertical: 5,
+                        ),
+
+                        leading:
+                            const CircleAvatar(
+                          backgroundColor:
+                              Color(0xFFE8E8E8),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
                           ),
                         ),
+
+                        title: Text(
+                          item[0],
+                          textAlign:
+                              TextAlign.right,
+                          style:
+                              const TextStyle(
+                            fontWeight:
+                                FontWeight.bold,
+                          ),
+                        ),
+
+                        subtitle: Text(
+                          item[1],
+                          textAlign:
+                              TextAlign.right,
+                        ),
+
+                        trailing:
+                            const Icon(
+                          Icons.chevron_left,
+                          color: Colors.grey,
+                        ),
+
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const ChatDetailScreen(
+                                username:
+                                    'مستخدم إعجاب',
+                              ),
+                            ),
+                          );
+                        },
                       ),
+                  ],
+                ),
+              );
+            }
+          }
+
+          class _Story extends StatelessWidget {
+            final String name;
+            final IconData? icon;
+
+            const _Story({
+              required this.name,
+              this.icon,
+            });
+
+            @override
+            Widget build(BuildContext context) {
+              return SizedBox(
+                width: 105,
+                child: Column(
+                  children: [
+
+                    Container(
+                      width: 78,
+                      height: 78,
+                      decoration:
+                          BoxDecoration(
+                        shape:
+                            BoxShape.circle,
+                        border: Border.all(
+                          color:
+                              const Color(
+                                  0xFF25BFEA),
+                          width: 4,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor:
+                            const Color(
+                                0xFFE6E6E6),
+                        child: Icon(
+                          icon ??
+                              Icons.person,
+                          size: 35,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow:
+                          TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               );
@@ -2458,13 +1605,1022 @@ jobs:
           DART
 
       # =========================================================
-      # 16. Android App Label
+      # 12. Chat
       # =========================================================
-      - name: Configure Android App
+      - name: Create Chat Screen
         shell: bash
         run: |
           set -e
-          cd clean_najma_app
+
+          cd clean_ejab_app/lib/screens
+
+          cat > chat_detail_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class ChatDetailScreen extends StatefulWidget {
+            final String username;
+
+            const ChatDetailScreen({
+              super.key,
+              required this.username,
+            });
+
+            @override
+            State<ChatDetailScreen> createState() =>
+                _ChatDetailScreenState();
+          }
+
+          class _ChatDetailScreenState
+              extends State<ChatDetailScreen> {
+
+            final TextEditingController controller =
+                TextEditingController();
+
+            final List<String> messages = [];
+
+            void send() {
+              final text =
+                  controller.text.trim();
+
+              if (text.isEmpty) {
+                return;
+              }
+
+              setState(() {
+                messages.add(text);
+                controller.clear();
+              });
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor:
+                    Colors.white,
+
+                appBar: AppBar(
+                  leading: IconButton(
+                    onPressed: () =>
+                        Navigator.pop(
+                            context),
+                    icon: const Icon(
+                        Icons.arrow_back),
+                  ),
+                  title:
+                      Text(widget.username),
+                  centerTitle: true,
+                ),
+
+                body: Column(
+                  children: [
+
+                    Expanded(
+                      child: messages.isEmpty
+                          ? Center(
+                              child:
+                                  Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment
+                                        .center,
+                                children: [
+
+                                  const CircleAvatar(
+                                    radius: 42,
+                                    backgroundColor:
+                                        Color(
+                                            0xFFE5E5E5),
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color:
+                                          Colors.white,
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                      height: 12),
+
+                                  Text(
+                                    widget.username,
+                                    style:
+                                        const TextStyle(
+                                      fontWeight:
+                                          FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding:
+                                  const EdgeInsets
+                                      .all(15),
+                              itemCount:
+                                  messages.length,
+                              itemBuilder:
+                                  (_, index) {
+                                return Align(
+                                  alignment:
+                                      Alignment
+                                          .centerLeft,
+                                  child:
+                                      Container(
+                                    margin:
+                                        const EdgeInsets
+                                            .only(
+                                      bottom: 10,
+                                    ),
+                                    padding:
+                                        const EdgeInsets
+                                            .all(12),
+                                    decoration:
+                                        BoxDecoration(
+                                      color:
+                                          const Color(
+                                              0xFFF1F1F1),
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(
+                                                  18),
+                                    ),
+                                    child: Text(
+                                      messages[
+                                          index],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+
+                    SafeArea(
+                      top: false,
+                      child: Container(
+                        padding:
+                            const EdgeInsets
+                                .all(10),
+                        color:
+                            const Color(
+                                0xFFF5F5F5),
+                        child: Row(
+                          children: [
+
+                            Expanded(
+                              child: TextField(
+                                controller:
+                                    controller,
+                                decoration:
+                                    InputDecoration(
+                                  hintText:
+                                      'رسالة...',
+                                  filled: true,
+                                  fillColor:
+                                      Colors.white,
+                                  border:
+                                      OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius
+                                            .circular(
+                                                25),
+                                    borderSide:
+                                        BorderSide
+                                            .none,
+                                  ),
+                                ),
+                                onSubmitted:
+                                    (_) => send(),
+                              ),
+                            ),
+
+                            IconButton(
+                              onPressed: send,
+                              icon:
+                                  const Icon(
+                                Icons.send,
+                                color:
+                                    Color(
+                                        0xFFFE2C55),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 13. Profile
+      # =========================================================
+      - name: Create Profile Screen
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app/lib/screens
+
+          cat > profile_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+          import 'drawer_menu.dart';
+
+          class ProfileScreen extends StatelessWidget {
+            const ProfileScreen({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor:
+                    Colors.white,
+
+                endDrawer:
+                    const DrawerMenu(),
+
+                appBar: AppBar(
+                  title: const Text(
+                    'إعجاب',
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+
+                  actions: [
+                    Builder(
+                      builder: (context) {
+                        return IconButton(
+                          onPressed: () {
+                            Scaffold.of(context)
+                                .openEndDrawer();
+                          },
+                          icon: const Icon(
+                              Icons.menu),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                body: ListView(
+                  children: [
+
+                    const SizedBox(height: 18),
+
+                    const CircleAvatar(
+                      radius: 47,
+                      backgroundColor:
+                          Colors.black,
+                      child: Icon(
+                        Icons.person,
+                        color:
+                            Colors.white,
+                        size: 55,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Center(
+                      child: Text(
+                        'مستخدم إعجاب',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    const Center(
+                      child: Text(
+                        '@ejab_user',
+                        style: TextStyle(
+                          color:
+                              Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(
+                        height: 18),
+
+                    const Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .center,
+                      children: [
+
+                        _Stat(
+                          number: '0',
+                          title: 'أتابعه',
+                        ),
+
+                        _Stat(
+                          number: '0',
+                          title: 'متابعين',
+                        ),
+
+                        _Stat(
+                          number: '0',
+                          title:
+                              'تسجيلات الإعجاب',
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                        height: 17),
+
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .center,
+                      children: [
+
+                        ElevatedButton(
+                          onPressed: () {},
+                          style:
+                              ElevatedButton
+                                  .styleFrom(
+                            backgroundColor:
+                                const Color(
+                                    0xFFFE2C55),
+                            foregroundColor:
+                                Colors.white,
+                            minimumSize:
+                                const Size(
+                                    150, 48),
+                            shape:
+                                RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          7),
+                            ),
+                          ),
+                          child:
+                              const Text(
+                            'متابعة',
+                          ),
+                        ),
+
+                        const SizedBox(
+                            width: 8),
+
+                        OutlinedButton(
+                          onPressed: () {},
+                          style:
+                              OutlinedButton
+                                  .styleFrom(
+                            foregroundColor:
+                                Colors.black,
+                            minimumSize:
+                                const Size(
+                                    150, 48),
+                            backgroundColor:
+                                const Color(
+                                    0xFFF2F2F2),
+                            side: BorderSide
+                                .none,
+                            shape:
+                                RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          7),
+                            ),
+                          ),
+                          child:
+                              const Text(
+                            'مراسلة',
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                        height: 15),
+
+                    const Center(
+                      child: Text(
+                        'مرحباً بكم في إعجاب ❤️',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(
+                        height: 15),
+
+                    const Divider(),
+
+                    const SizedBox(
+                        height: 12),
+
+                    const Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .center,
+                      children: [
+                        Icon(
+                            Icons.grid_view),
+                        SizedBox(width: 35),
+                        Icon(
+                            Icons.favorite_border),
+                      ],
+                    ),
+
+                    const SizedBox(
+                        height: 20),
+
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics:
+                          const NeverScrollableScrollPhysics(),
+                      padding:
+                          const EdgeInsets.all(
+                              2),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 2,
+                        mainAxisSpacing: 2,
+                      ),
+                      itemCount: 9,
+                      itemBuilder:
+                          (_, index) {
+                        return Container(
+                          color:
+                              Colors.black12,
+                          child:
+                              const Icon(
+                            Icons.play_arrow,
+                            color:
+                                Colors.black54,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+
+          class _Stat
+              extends StatelessWidget {
+
+            final String number;
+            final String title;
+
+            const _Stat({
+              required this.number,
+              required this.title,
+            });
+
+            @override
+            Widget build(
+                BuildContext context) {
+              return SizedBox(
+                width: 110,
+                child: Column(
+                  children: [
+
+                    Text(
+                      number,
+                      style:
+                          const TextStyle(
+                        fontSize: 18,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+
+                    Text(
+                      title,
+                      style:
+                          const TextStyle(
+                        color:
+                            Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 14. Drawer Menu
+      # =========================================================
+      - name: Create Drawer Menu
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app/lib/screens
+
+          cat > drawer_menu.dart <<'DART'
+          import 'package:flutter/material.dart';
+          import 'settings_privacy_screen.dart';
+
+          class DrawerMenu extends StatelessWidget {
+            const DrawerMenu({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Drawer(
+                backgroundColor:
+                    Colors.white,
+                width:
+                    MediaQuery.of(context)
+                            .size
+                            .width *
+                        0.86,
+
+                child: SafeArea(
+                  child: ListView(
+                    padding:
+                        EdgeInsets.zero,
+                    children: [
+
+                      const SizedBox(
+                          height: 18),
+
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(
+                          horizontal: 28,
+                        ),
+                        child: Text(
+                          'الحساب',
+                          textAlign:
+                              TextAlign.right,
+                          style:
+                              TextStyle(
+                            color:
+                                Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+
+                      _item(
+                        icon: Icons
+                            .account_balance_wallet_outlined,
+                        title: 'الرصيد',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'الرصيد متاح في النسخة القادمة',
+                          );
+                        },
+                      ),
+
+                      const Divider(),
+
+                      const Padding(
+                        padding:
+                            EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 10,
+                        ),
+                        child: Text(
+                          'الأدوات',
+                          textAlign:
+                              TextAlign.right,
+                          style:
+                              TextStyle(
+                            color:
+                                Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+
+                      _item(
+                        icon:
+                            Icons.history,
+                        title:
+                            'مركز الأنشطة',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'مركز الأنشطة',
+                          );
+                        },
+                      ),
+
+                      _item(
+                        icon:
+                            Icons.qr_code_2,
+                        title:
+                            'رمز QR الخاص بك',
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) =>
+                                AlertDialog(
+                              title:
+                                  const Text(
+                                'رمز QR',
+                              ),
+                              content:
+                                  const SizedBox(
+                                width: 200,
+                                height: 200,
+                                child:
+                                    Center(
+                                  child:
+                                      Icon(
+                                    Icons
+                                        .qr_code_2,
+                                    size:
+                                        170,
+                                  ),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed:
+                                      () =>
+                                          Navigator.pop(
+                                              context),
+                                  child:
+                                      const Text(
+                                    'إغلاق',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+
+                      const Divider(),
+
+                      _item(
+                        icon:
+                            Icons.auto_awesome,
+                        title:
+                            'Ejab Studio',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'استوديو إعجاب',
+                          );
+                        },
+                      ),
+
+                      _item(
+                        icon:
+                            Icons.settings_outlined,
+                        title:
+                            'الإعدادات والخصوصية',
+                        onTap: () {
+                          Navigator.pop(
+                              context);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const SettingsPrivacyScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _item({
+              required IconData icon,
+              required String title,
+              required VoidCallback onTap,
+            }) {
+              return ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(
+                  horizontal: 25,
+                ),
+
+                leading:
+                    const Icon(
+                  Icons.chevron_left,
+                  color: Colors.grey,
+                ),
+
+                trailing:
+                    Icon(
+                  icon,
+                  color: Colors.black,
+                  size: 27,
+                ),
+
+                title: Text(
+                  title,
+                  textAlign:
+                      TextAlign.right,
+                  style:
+                      const TextStyle(
+                    fontSize: 17,
+                    fontWeight:
+                        FontWeight.w600,
+                  ),
+                ),
+
+                onTap: onTap,
+              );
+            }
+
+            void _showMessage(
+              BuildContext context,
+              String message,
+            ) {
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(
+                      context)
+                  .showSnackBar(
+                SnackBar(
+                  content: Text(
+                    message,
+                    textAlign:
+                        TextAlign.right,
+                  ),
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 15. Settings & Privacy
+      # =========================================================
+      - name: Create Settings Privacy
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app/lib/screens
+
+          cat > settings_privacy_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class SettingsPrivacyScreen
+              extends StatelessWidget {
+
+            const SettingsPrivacyScreen({
+              super.key,
+            });
+
+            @override
+            Widget build(
+                BuildContext context) {
+              return Scaffold(
+                backgroundColor:
+                    const Color(0xFFF5F5F5),
+
+                appBar: AppBar(
+                  title: const Text(
+                    'الإعدادات والخصوصية',
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+
+                  leading: IconButton(
+                    onPressed: () =>
+                        Navigator.pop(
+                            context),
+                    icon: const Icon(
+                        Icons.arrow_back),
+                  ),
+                ),
+
+                body: ListView(
+                  padding:
+                      const EdgeInsets.only(
+                    bottom: 30,
+                  ),
+                  children: [
+
+                    _section(
+                      title: 'الحساب',
+                      items: [
+                        _row(
+                          Icons.person_outline,
+                          'الحساب',
+                        ),
+                        _row(
+                          Icons.shield_outlined,
+                          'الأمان والأذونات',
+                        ),
+                        _row(
+                          Icons.share_outlined,
+                          'مشاركة الملف الشخصي',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'الخصوصية',
+                      items: [
+                        _row(
+                          Icons.lock_outline,
+                          'حساب خاص',
+                        ),
+                        _row(
+                          Icons.block,
+                          'الحسابات المحظورة',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'التفاعلات',
+                      items: [
+                        _row(
+                          Icons.send_outlined,
+                          'الرسائل الخاصة',
+                        ),
+                        _row(
+                          Icons.favorite,
+                          'فيديوهات أعجبتك',
+                        ),
+                        _row(
+                          Icons.visibility_outlined,
+                          'المشاهدات',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'المحتوى',
+                      items: [
+                        _row(
+                          Icons.video_collection_outlined,
+                          'إدارة المنشورات',
+                        ),
+                        _row(
+                          Icons.music_note,
+                          'الموسيقى',
+                        ),
+                        _row(
+                          Icons.live_tv_outlined,
+                          'LIVE',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'الدعم',
+                      items: [
+                        _row(
+                          Icons.headset_mic_outlined,
+                          'مركز المساعدة',
+                        ),
+                        _row(
+                          Icons.info_outline,
+                          'حول تطبيق إعجاب',
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                        height: 15),
+
+                    const Center(
+                      child: Text(
+                        'إعجاب | Ejab v1.0.0',
+                        style:
+                            TextStyle(
+                          color:
+                              Colors.grey,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            Widget _section({
+              required String title,
+              required List<Widget> items,
+            }) {
+              return Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.end,
+                children: [
+
+                  Padding(
+                    padding:
+                        const EdgeInsets
+                            .fromLTRB(
+                      20,
+                      18,
+                      20,
+                      8,
+                    ),
+                    child: Text(
+                      title,
+                      style:
+                          const TextStyle(
+                        color:
+                            Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+
+                  Container(
+                    margin:
+                        const EdgeInsets
+                            .symmetric(
+                      horizontal: 12,
+                    ),
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          Colors.white,
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                                  14),
+                    ),
+                    child:
+                        Column(
+                      children:
+                          items,
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            Widget _row(
+              IconData icon,
+              String title,
+            ) {
+              return ListTile(
+                leading:
+                    const Icon(
+                  Icons.chevron_left,
+                  color: Colors.grey,
+                ),
+
+                trailing:
+                    Icon(
+                  icon,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+
+                title: Text(
+                  title,
+                  textAlign:
+                      TextAlign.right,
+                  style:
+                      const TextStyle(
+                    fontSize: 16,
+                    fontWeight:
+                        FontWeight.w600,
+                  ),
+                ),
+
+                onTap: () {},
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 16. Android App Label
+      # =========================================================
+      - name: Configure Android App Name
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app
 
           python3 - <<'PY'
           from pathlib import Path
@@ -2476,21 +2632,23 @@ jobs:
           text = p.read_text()
 
           text = text.replace(
-              'android:label="najma_app"',
-              'android:label="نجمة | Najma"'
+              'android:label="ejab_app"',
+              'android:label="إعجاب | Ejab"'
           )
 
           p.write_text(text)
           PY
 
       # =========================================================
-      # 17. Flutter Pub Get
+      # 17. Pub Get
       # =========================================================
       - name: Flutter Pub Get
         shell: bash
         run: |
           set -e
-          cd clean_najma_app
+
+          cd clean_ejab_app
+
           flutter pub get
 
       # =========================================================
@@ -2500,7 +2658,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app
+
+          cd clean_ejab_app
+
           dart format lib
 
       # =========================================================
@@ -2510,7 +2670,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app
+
+          cd clean_ejab_app
+
           flutter analyze
 
       # =========================================================
@@ -2520,14 +2682,17 @@ jobs:
         shell: bash
         run: |
           set -e
-          cd clean_najma_app
 
-          flutter build apk --release
+          cd clean_ejab_app
+
+          flutter build apk \
+            --release \
+            --split-per-abi=false
 
       # =========================================================
       # 21. Prepare APK
       # =========================================================
-      - name: Prepare APK Artifact
+      - name: Prepare Ejab APK
         shell: bash
         run: |
           set -e
@@ -2535,20 +2700,16 @@ jobs:
           mkdir -p output
 
           cp \
-            clean_najma_app/build/app/outputs/flutter-apk/app-release.apk \
-            output/Najma.apk
-
-          test -f output/Najma.apk
-
-          ls -lh output/Najma.apk
+            clean_ejab_app/build/app/outputs/flutter-apk/app-release.apk \
+            output/Ejab.apk
 
       # =========================================================
       # 22. Upload APK
       # =========================================================
-      - name: Upload Najma APK
+      - name: Upload Ejab APK
         uses: actions/upload-artifact@v4
         with:
-          name: Najma-Android-App
-          path: output/Najma.apk
+          name: Ejab-Android-App
+          path: output/Ejab.apk
           if-no-files-found: error
           retention-days: 30
