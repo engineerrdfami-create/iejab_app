@@ -25,15 +25,14 @@ jobs:
       # =========================================================
       # 2. Java 17
       # =========================================================
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: '17'
-          cache: gradle
 
       # =========================================================
-      # 3. Flutter Stable
+      # 3. Flutter
       # =========================================================
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -42,7 +41,7 @@ jobs:
           cache: true
 
       # =========================================================
-      # 4. Create clean Flutter project
+      # 4. Create Clean Flutter Project
       # =========================================================
       - name: Create Clean Ejab Flutter Project
         shell: bash
@@ -59,11 +58,14 @@ jobs:
 
           cd clean_ejab_app
 
-          # حذف ملفات Flutter الافتراضية
-          rm -rf lib/*
-          rm -rf test/*
+          # حذف الاختبارات الافتراضية حتى لا يظهر خطأ MyApp
+          rm -rf test
 
-          # إنشاء مجلد الشاشات
+          # تنظيف مجلد lib
+          rm -rf lib
+
+          # إنشاء مجلدات التطبيق
+          mkdir -p lib
           mkdir -p lib/screens
 
       # =========================================================
@@ -143,7 +145,6 @@ jobs:
 
           class _MainNavigationScreenState
               extends State<MainNavigationScreen> {
-
             int currentIndex = 0;
 
             final List<Widget> pages = const [
@@ -199,8 +200,7 @@ jobs:
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _navItem(
                         icon: Icons.home_rounded,
@@ -222,7 +222,7 @@ jobs:
                       ),
                       _navItem(
                         icon: Icons.person_outline_rounded,
-                        label: 'الملف الشخصي',
+                        label: 'حسابي',
                         index: 4,
                       ),
                     ],
@@ -245,8 +245,7 @@ jobs:
                 child: SizedBox(
                   width: 72,
                   child: Column(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Stack(
                         clipBehavior: Clip.none,
@@ -263,16 +262,13 @@ jobs:
                               top: -8,
                               right: -12,
                               child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 6,
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      const Color(0xFFFE2C55),
-                                  borderRadius:
-                                      BorderRadius.circular(20),
+                                  color: const Color(0xFFFE2C55),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
                                   badge,
@@ -352,19 +348,17 @@ jobs:
 
           cat > home_feed_screen.dart <<'DART'
           import 'package:flutter/material.dart';
+
           import 'search_screen.dart';
 
           class HomeFeedScreen extends StatefulWidget {
             const HomeFeedScreen({super.key});
 
             @override
-            State<HomeFeedScreen> createState() =>
-                _HomeFeedScreenState();
+            State<HomeFeedScreen> createState() => _HomeFeedScreenState();
           }
 
-          class _HomeFeedScreenState
-              extends State<HomeFeedScreen> {
-
+          class _HomeFeedScreenState extends State<HomeFeedScreen> {
             bool liked = false;
             bool saved = false;
 
@@ -392,7 +386,6 @@ jobs:
                 backgroundColor: Colors.black,
                 body: Stack(
                   children: [
-
                     Positioned.fill(
                       child: Container(
                         decoration: const BoxDecoration(
@@ -411,77 +404,77 @@ jobs:
                           child: Icon(
                             Icons.play_circle_outline,
                             size: 82,
-                            color:
-                                Colors.white.withOpacity(0.25),
+                            color: Colors.white.withOpacity(0.25),
                           ),
                         ),
                       ),
                     ),
 
                     SafeArea(
-                      child: Row(
-                        children: [
-
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.live_tv_outlined,
-                              color: Colors.white,
-                              size: 29,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.live_tv_outlined,
+                                color: Colors.white,
+                                size: 29,
+                              ),
                             ),
-                          ),
-
-                          const Expanded(
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'لك',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight:
-                                        FontWeight.bold,
+                            const Expanded(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'لك',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 25),
-                                Text(
-                                  'أتابعه',
-                                  style: TextStyle(
-                                    color: Colors.white60,
-                                    fontSize: 17,
+                                  SizedBox(width: 25),
+                                  Text(
+                                    'أتابعه',
+                                    style: TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 17,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 25),
-                                Text(
-                                  'المجتمع',
-                                  style: TextStyle(
-                                    color: Colors.white60,
-                                    fontSize: 17,
+                                  SizedBox(width: 25),
+                                  Text(
+                                    'المجتمع',
+                                    style: TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 17,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-
-                          IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const SearchScreen(),
-                                ),
-                              );
-                            },
-                            icon: const Icon(
-                              Icons.search,
-                              color: Colors.white,
-                              size: 31,
+                            IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const SearchScreen(),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.search,
+                                color: Colors.white,
+                                size: 31,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
 
@@ -490,15 +483,12 @@ jobs:
                       bottom: 120,
                       child: Column(
                         children: [
-
                           _action(
                             icon: Icons.person,
                             text: '+',
                             isAvatar: true,
                           ),
-
                           const SizedBox(height: 18),
-
                           GestureDetector(
                             onTap: toggleLike,
                             child: Column(
@@ -514,8 +504,7 @@ jobs:
                                 ),
                                 Text(
                                   '$likes',
-                                  style:
-                                      const TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
                                   ),
@@ -523,9 +512,7 @@ jobs:
                               ],
                             ),
                           ),
-
                           const SizedBox(height: 18),
-
                           GestureDetector(
                             onTap: openComments,
                             child: _action(
@@ -533,9 +520,7 @@ jobs:
                               text: '33',
                             ),
                           ),
-
                           const SizedBox(height: 18),
-
                           GestureDetector(
                             onTap: () {
                               setState(() {
@@ -549,9 +534,7 @@ jobs:
                               text: '171',
                             ),
                           ),
-
                           const SizedBox(height: 18),
-
                           _action(
                             icon: Icons.reply_rounded,
                             text: '22',
@@ -565,35 +548,28 @@ jobs:
                       left: 90,
                       bottom: 28,
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: const [
-
                           Text(
-                            'Ejab',
+                            'إعجاب',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           SizedBox(height: 7),
-
                           Text(
-                            'مرحباً بك في تطبيق إعجاب ❤️',
+                            'مرحباً بك في تطبيق إعجاب ❤️ #foryou #ejab',
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 15,
                             ),
                           ),
-
                           SizedBox(height: 5),
-
                           Text(
-                            '#إعجاب #Ejab #foryou',
+                            '#إعجاب #فيديوهات #المجتمع',
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: Colors.white70,
@@ -615,7 +591,6 @@ jobs:
             }) {
               return Column(
                 children: [
-
                   Container(
                     width: isAvatar ? 52 : 48,
                     height: isAvatar ? 52 : 48,
@@ -627,21 +602,16 @@ jobs:
                     ),
                     child: Icon(
                       icon,
-                      color: isAvatar
-                          ? Colors.black
-                          : Colors.white,
+                      color: isAvatar ? Colors.black : Colors.white,
                       size: isAvatar ? 31 : 36,
                     ),
                   ),
-
                   if (isAvatar)
                     Container(
-                      margin:
-                          const EdgeInsets.only(top: -12),
+                      margin: const EdgeInsets.only(top: -12),
                       width: 27,
                       height: 27,
-                      decoration:
-                          const BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Color(0xFFFE2C55),
                         shape: BoxShape.circle,
                       ),
@@ -651,7 +621,6 @@ jobs:
                         size: 20,
                       ),
                     ),
-
                   Text(
                     text,
                     style: const TextStyle(
@@ -673,130 +642,97 @@ jobs:
                 initialChildSize: 0.65,
                 minChildSize: 0.35,
                 maxChildSize: 0.9,
-                builder:
-                    (context, controller) {
+                builder: (context, controller) {
                   return Container(
-                    decoration:
-                        const BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.vertical(
+                      borderRadius: BorderRadius.vertical(
                         top: Radius.circular(25),
                       ),
                     ),
                     child: Column(
                       children: [
-
                         const SizedBox(height: 12),
-
                         Row(
                           children: [
-
                             IconButton(
-                              onPressed: () =>
-                                  Navigator.pop(
-                                      context),
+                              onPressed: () => Navigator.pop(context),
                               icon: const Icon(
                                 Icons.close,
+                                color: Colors.black54,
                               ),
                             ),
-
                             const Expanded(
                               child: Center(
                                 child: Text(
                                   'التعليقات',
-                                  style:
-                                      TextStyle(
+                                  style: TextStyle(
+                                    color: Colors.black,
                                     fontSize: 17,
-                                    fontWeight:
-                                        FontWeight.bold,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
-
                             const SizedBox(width: 48),
                           ],
                         ),
-
                         const Divider(height: 1),
-
                         Expanded(
                           child: ListView(
                             controller: controller,
                             children: const [
-
                               _Comment(
                                 name: 'مستخدم إعجاب',
-                                text:
-                                    'ما شاء الله ❤️',
+                                text: 'محتوى رائع ❤️',
                                 likes: '4',
                               ),
-
                               _Comment(
-                                name: 'Ejab User',
-                                text:
-                                    'رائع جداً 🔥',
+                                name: 'Ahmed',
+                                text: 'مشاء الله',
                                 likes: '3',
                               ),
-
                               _Comment(
                                 name: 'محمد',
-                                text:
-                                    'استمر يا بطل',
+                                text: '🔥🔥🔥',
                                 likes: '2',
                               ),
                             ],
                           ),
                         ),
-
                         SafeArea(
                           top: false,
                           child: Container(
-                            padding:
-                                const EdgeInsets.all(
-                                    10),
+                            padding: const EdgeInsets.all(10),
+                            color: Colors.white,
                             child: Row(
                               children: [
-
+                                const Icon(
+                                  Icons.alternate_email,
+                                  color: Colors.black,
+                                ),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Container(
-                                    padding:
-                                        const EdgeInsets
-                                            .symmetric(
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 15,
                                     ),
-                                    decoration:
-                                        BoxDecoration(
-                                      color:
-                                          const Color(
-                                              0xFFF1F1F1),
-                                      borderRadius:
-                                          BorderRadius
-                                              .circular(
-                                                  25),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F1F1),
+                                      borderRadius: BorderRadius.circular(25),
                                     ),
-                                    child:
-                                        const TextField(
-                                      decoration:
-                                          InputDecoration(
-                                        hintText:
-                                            'إضافة تعليق...',
-                                        border:
-                                            InputBorder
-                                                .none,
+                                    child: const TextField(
+                                      decoration: InputDecoration(
+                                        hintText: 'إضافة تعليق...',
+                                        border: InputBorder.none,
                                       ),
                                     ),
                                   ),
                                 ),
-
-                                const SizedBox(
-                                    width: 8),
-
+                                const SizedBox(width: 8),
                                 const Icon(
-                                  Icons.send,
-                                  color:
-                                      Color(0xFFFE2C55),
+                                  Icons.image_outlined,
+                                  color: Colors.black,
                                 ),
                               ],
                             ),
@@ -824,52 +760,38 @@ jobs:
             @override
             Widget build(BuildContext context) {
               return Padding(
-                padding:
-                    const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 13,
                 ),
                 child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     const CircleAvatar(
                       radius: 21,
-                      backgroundColor:
-                          Color(0xFFE5E5E5),
+                      backgroundColor: Color(0xFFE5E5E5),
                       child: Icon(
                         Icons.person,
                         color: Colors.white,
                       ),
                     ),
-
                     const SizedBox(width: 10),
-
                     Expanded(
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-
                           Text(
                             name,
-                            style:
-                                const TextStyle(
+                            style: const TextStyle(
                               color: Colors.black54,
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           const SizedBox(height: 3),
-
                           Text(
                             text,
-                            textAlign:
-                                TextAlign.right,
-                            style:
-                                const TextStyle(
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 15,
                             ),
@@ -877,7 +799,7 @@ jobs:
                         ],
                       ),
                     ),
-
+                    const SizedBox(width: 10),
                     Column(
                       children: [
                         const Icon(
@@ -886,8 +808,7 @@ jobs:
                         ),
                         Text(
                           likes,
-                          style:
-                              const TextStyle(
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 11,
                           ),
@@ -918,30 +839,30 @@ jobs:
             const SearchScreen({super.key});
 
             @override
-            State<SearchScreen> createState() =>
-                _SearchScreenState();
+            State<SearchScreen> createState() => _SearchScreenState();
           }
 
-          class _SearchScreenState
-              extends State<SearchScreen> {
-
+          class _SearchScreenState extends State<SearchScreen> {
             final TextEditingController controller =
                 TextEditingController();
 
             final List<String> history = [
-              'مستخدمين إعجاب',
-              'فيديوهات',
-              'أصدقاء',
+              'فيديوهات اليوم',
+              'محتوى عربي',
+              'رياضة',
+              'ترند',
+              'موسيقى',
             ];
 
             final List<String> suggestions = [
-              'أفضل الفيديوهات',
-              'مقاطع مضحكة',
+              'فيديوهات شائعة',
+              'أفضل المبدعين',
               'رياضة',
               'موسيقى',
-              'ألعاب',
+              'أخبار اليوم',
               'ترند إعجاب',
-              'محتوى جديد',
+              'محتوى عربي',
+              'كوميديا',
             ];
 
             @override
@@ -951,61 +872,40 @@ jobs:
                 body: SafeArea(
                   child: Column(
                     children: [
-
                       Padding(
-                        padding:
-                            const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         child: Row(
                           children: [
-
                             TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(
-                                      context),
+                              onPressed: () => Navigator.pop(context),
                               child: const Text(
                                 'بحث',
                                 style: TextStyle(
-                                  color:
-                                      Color(0xFFFE2C55),
-                                  fontWeight:
-                                      FontWeight.bold,
+                                  color: Color(0xFFFE2C55),
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-
                             Expanded(
                               child: Container(
                                 height: 46,
-                                decoration:
-                                    BoxDecoration(
-                                  color:
-                                      const Color(
-                                          0xFFF1F1F1),
-                                  borderRadius:
-                                      BorderRadius
-                                          .circular(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F1F1),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: TextField(
-                                  controller:
-                                      controller,
-                                  textDirection:
-                                      TextDirection.rtl,
-                                  decoration:
-                                      const InputDecoration(
-                                    hintText: 'بحث',
-                                    prefixIcon:
-                                        Icon(Icons.search),
-                                    border:
-                                        InputBorder.none,
+                                  controller: controller,
+                                  textDirection: TextDirection.rtl,
+                                  decoration: const InputDecoration(
+                                    hintText: 'بحث في إعجاب',
+                                    prefixIcon: Icon(Icons.search),
+                                    border: InputBorder.none,
                                   ),
                                 ),
                               ),
                             ),
-
                             IconButton(
-                              onPressed: () =>
-                                  Navigator.pop(
-                                      context),
+                              onPressed: () => Navigator.pop(context),
                               icon: const Icon(
                                 Icons.arrow_forward,
                                 size: 30,
@@ -1014,55 +914,46 @@ jobs:
                           ],
                         ),
                       ),
-
                       Expanded(
                         child: ListView(
                           children: [
-
-                            for (final item
-                                in history)
+                            for (final item in history)
                               ListTile(
-                                leading:
-                                    const Icon(
-                                  Icons.history,
+                                leading: const Icon(
+                                  Icons.close,
                                   color: Colors.grey,
                                 ),
                                 title: Text(
                                   item,
-                                  textAlign:
-                                      TextAlign.right,
+                                  textAlign: TextAlign.right,
+                                ),
+                                trailing: const Icon(
+                                  Icons.history,
+                                  color: Colors.grey,
                                 ),
                               ),
-
                             const Divider(),
-
                             const Padding(
-                              padding:
-                                  EdgeInsets.all(16),
+                              padding: EdgeInsets.all(16),
                               child: Text(
                                 'قد يعجبك',
-                                textAlign:
-                                    TextAlign.right,
+                                textAlign: TextAlign.right,
                                 style: TextStyle(
-                                  fontWeight:
-                                      FontWeight.bold,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 17,
                                 ),
                               ),
                             ),
-
-                            for (final item
-                                in suggestions)
+                            for (final item in suggestions)
                               ListTile(
-                                leading:
-                                    const Icon(
-                                  Icons.search,
-                                  color: Colors.grey,
+                                leading: const Icon(
+                                  Icons.circle,
+                                  size: 8,
+                                  color: Color(0xFFFE2C55),
                                 ),
                                 title: Text(
                                   item,
-                                  textAlign:
-                                      TextAlign.right,
+                                  textAlign: TextAlign.right,
                                 ),
                               ),
                           ],
@@ -1077,328 +968,7 @@ jobs:
           DART
 
       # =========================================================
-      # 9. Friends
-      # =========================================================
-      - name: Create Friends Screen
-        shell: bash
-        run: |
-          set -e
-
-          cd clean_ejab_app/lib/screens
-
-          cat > friends_screen.dart <<'DART'
-          import 'package:flutter/material.dart';
-
-          class FriendsScreen extends StatelessWidget {
-            const FriendsScreen({super.key});
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                backgroundColor: Colors.white,
-                appBar: AppBar(
-                  title: const Text(
-                    'الأصدقاء',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  centerTitle: true,
-                ),
-                body: ListView(
-                  padding:
-                      const EdgeInsets.all(18),
-                  children: [
-
-                    const Text(
-                      'اكتشف أصدقاء جدد',
-                      textAlign:
-                          TextAlign.right,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    for (int i = 1; i <= 6; i++)
-                      Card(
-                        elevation: 0,
-                        color:
-                            const Color(0xFFF7F7F7),
-                        child: ListTile(
-
-                          leading:
-                              ElevatedButton(
-                            onPressed: () {},
-                            style:
-                                ElevatedButton
-                                    .styleFrom(
-                              backgroundColor:
-                                  const Color(
-                                      0xFFFE2C55),
-                              foregroundColor:
-                                  Colors.white,
-                            ),
-                            child:
-                                const Text(
-                              'متابعة',
-                            ),
-                          ),
-
-                          trailing:
-                              const CircleAvatar(
-                            backgroundColor:
-                                Color(0xFFE5E5E5),
-                            child: Icon(
-                              Icons.person,
-                              color:
-                                  Colors.white,
-                            ),
-                          ),
-
-                          title: Text(
-                            'مستخدم إعجاب $i',
-                            textAlign:
-                                TextAlign.right,
-                          ),
-
-                          subtitle: Text(
-                            '@ejab_user$i',
-                            textAlign:
-                                TextAlign.right,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            }
-          }
-          DART
-
-      # =========================================================
-      # 10. Create Post
-      # =========================================================
-      - name: Create Post Screen
-        shell: bash
-        run: |
-          set -e
-
-          cd clean_ejab_app/lib/screens
-
-          cat > create_post_screen.dart <<'DART'
-          import 'package:flutter/material.dart';
-
-          class CreatePostScreen extends StatefulWidget {
-            const CreatePostScreen({super.key});
-
-            @override
-            State<CreatePostScreen> createState() =>
-                _CreatePostScreenState();
-          }
-
-          class _CreatePostScreenState
-              extends State<CreatePostScreen> {
-
-            int selected = 2;
-
-            @override
-            Widget build(BuildContext context) {
-              return Scaffold(
-                backgroundColor: Colors.black,
-                body: SafeArea(
-                  child: Stack(
-                    children: [
-
-                      Positioned.fill(
-                        child: Container(
-                          color:
-                              const Color(0xFF111111),
-                          child: const Center(
-                            child: Column(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                              children: [
-
-                                Icon(
-                                  Icons.videocam_outlined,
-                                  color:
-                                      Colors.white38,
-                                  size: 80,
-                                ),
-
-                                SizedBox(height: 12),
-
-                                Text(
-                                  'إنشاء فيديو',
-                                  style: TextStyle(
-                                    color:
-                                        Colors.white54,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: IconButton(
-                          onPressed: () =>
-                              Navigator.pop(
-                                  context),
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 31,
-                          ),
-                        ),
-                      ),
-
-                      Positioned(
-                        top: 15,
-                        right: 15,
-                        child: Column(
-                          children: const [
-
-                            Icon(
-                              Icons
-                                  .flip_camera_ios_outlined,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-
-                            SizedBox(height: 25),
-
-                            Icon(
-                              Icons.flash_on_outlined,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-
-                            SizedBox(height: 25),
-
-                            Icon(
-                              Icons.timer_outlined,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-
-                            SizedBox(height: 25),
-
-                            Icon(
-                              Icons.speed,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 25,
-                        child: Column(
-                          children: [
-
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .center,
-                              children: [
-                                _mode('نص', 0),
-                                _mode('صورة', 1),
-                                _mode('15 ث', 2),
-                                _mode('60 ث', 3),
-                                _mode('10 د', 4),
-                              ],
-                            ),
-
-                            const SizedBox(
-                                height: 20),
-
-                            Container(
-                              width: 78,
-                              height: 78,
-                              decoration:
-                                  BoxDecoration(
-                                shape:
-                                    BoxShape.circle,
-                                border:
-                                    Border.all(
-                                  color:
-                                      Colors.white,
-                                  width: 5,
-                                ),
-                              ),
-                              child: Center(
-                                child: Container(
-                                  width: 62,
-                                  height: 62,
-                                  decoration:
-                                      const BoxDecoration(
-                                    color:
-                                        Color(
-                                            0xFFFE2C55),
-                                    shape:
-                                        BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            Widget _mode(
-              String text,
-              int index,
-            ) {
-              final selectedMode =
-                  selected == index;
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selected = index;
-                  });
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 10,
-                  ),
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: selectedMode
-                          ? Colors.white
-                          : Colors.white54,
-                      fontWeight: selectedMode
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            }
-          }
-          DART
-
-      # =========================================================
-      # 11. Inbox
+      # 9. Inbox
       # =========================================================
       - name: Create Inbox Screen
         shell: bash
@@ -1409,6 +979,7 @@ jobs:
 
           cat > inbox_screen.dart <<'DART'
           import 'package:flutter/material.dart';
+
           import 'chat_detail_screen.dart';
 
           class InboxScreen extends StatelessWidget {
@@ -1416,129 +987,109 @@ jobs:
 
             @override
             Widget build(BuildContext context) {
-
               final messages = [
-                [
-                  'متابعون جدد',
-                  'لديك متابع جديد',
-                ],
-                [
-                  'النشاط',
-                  'لديك نشاط جديد',
-                ],
-                [
-                  'إشعارات إعجاب',
-                  'مرحباً بك في إعجاب',
-                ],
-                [
-                  'مستخدم إعجاب',
-                  'أرسل لك رسالة',
-                ],
+                ['متابعون جدد', 'لديك متابع جديد', '9'],
+                ['النشاط', 'هناك نشاط جديد على حسابك', '13'],
+                ['إشعارات إعجاب', 'لديك إشعار جديد', '5'],
+                ['المجتمع', 'تم نشر فيديو جديد', '3'],
+                ['إشعارات النظام', 'مرحباً بك في إعجاب', ''],
+                ['أحمد', 'تم الإرسال', '2'],
               ];
 
               return Scaffold(
-                backgroundColor:
-                    Colors.white,
-
+                backgroundColor: Colors.white,
                 appBar: AppBar(
                   title: const Text(
                     'صندوق الوارد',
                     style: TextStyle(
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   centerTitle: true,
+                  leading: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.search),
+                  ),
                   actions: [
                     IconButton(
                       onPressed: () {},
-                      icon: const Icon(
-                        Icons.person_add_alt_1,
-                      ),
+                      icon: const Icon(Icons.person_add_alt_1),
                     ),
                   ],
                 ),
-
                 body: ListView(
                   children: [
-
                     SizedBox(
                       height: 125,
                       child: ListView(
-                        scrollDirection:
-                            Axis.horizontal,
+                        scrollDirection: Axis.horizontal,
                         reverse: true,
                         children: const [
                           _Story(
                             name: 'إنشاء',
                             icon: Icons.add,
                           ),
-                          _Story(
-                            name: 'أصدقاؤك',
-                          ),
-                          _Story(
-                            name: 'مستخدم جديد',
-                          ),
+                          _Story(name: 'صديق'),
+                          _Story(name: 'مستخدم'),
+                          _Story(name: 'مبدع'),
                         ],
                       ),
                     ),
-
                     const Divider(),
-
                     for (final item in messages)
                       ListTile(
-                        contentPadding:
-                            const EdgeInsets
-                                .symmetric(
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 5,
                         ),
-
-                        leading:
-                            const CircleAvatar(
-                          backgroundColor:
-                              Color(0xFFE8E8E8),
+                        leading: item[2].isEmpty
+                            ? const CircleAvatar(
+                                backgroundColor: Color(0xFFE8E8E8),
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : CircleAvatar(
+                                backgroundColor: const Color(0xFFE8E8E8),
+                                child: Text(
+                                  item[2],
+                                  style: const TextStyle(
+                                    color: Color(0xFFFE2C55),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                        title: Text(
+                          item[0],
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          item[1],
+                          textAlign: TextAlign.right,
+                        ),
+                        trailing: const CircleAvatar(
+                          backgroundColor: Color(0xFFE8E8E8),
                           child: Icon(
                             Icons.person,
                             color: Colors.white,
                           ),
                         ),
-
-                        title: Text(
-                          item[0],
-                          textAlign:
-                              TextAlign.right,
-                          style:
-                              const TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-
-                        subtitle: Text(
-                          item[1],
-                          textAlign:
-                              TextAlign.right,
-                        ),
-
-                        trailing:
-                            const Icon(
-                          Icons.chevron_left,
-                          color: Colors.grey,
-                        ),
-
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const ChatDetailScreen(
-                                username:
-                                    'مستخدم إعجاب',
-                              ),
-                            ),
-                          );
-                        },
+                        onTap: item[0] == 'أحمد'
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ChatDetailScreen(
+                                      username: 'أحمد',
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
                       ),
                   ],
                 ),
@@ -1557,45 +1108,35 @@ jobs:
 
             @override
             Widget build(BuildContext context) {
-              return SizedBox(
+              return Container(
                 width: 105,
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   children: [
-
                     Container(
                       width: 78,
                       height: 78,
-                      decoration:
-                          BoxDecoration(
-                        shape:
-                            BoxShape.circle,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
                         border: Border.all(
-                          color:
-                              const Color(
-                                  0xFF25BFEA),
+                          color: const Color(0xFF25BFEA),
                           width: 4,
                         ),
                       ),
                       child: CircleAvatar(
-                        backgroundColor:
-                            const Color(
-                                0xFFE6E6E6),
+                        backgroundColor: const Color(0xFFE6E6E6),
                         child: Icon(
-                          icon ??
-                              Icons.person,
+                          icon ?? Icons.person,
                           size: 35,
                           color: Colors.grey,
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
                     Text(
                       name,
                       maxLines: 1,
-                      overflow:
-                          TextOverflow.ellipsis,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -1605,7 +1146,7 @@ jobs:
           DART
 
       # =========================================================
-      # 12. Chat
+      # 10. Chat
       # =========================================================
       - name: Create Chat Screen
         shell: bash
@@ -1632,15 +1173,13 @@ jobs:
 
           class _ChatDetailScreenState
               extends State<ChatDetailScreen> {
-
             final TextEditingController controller =
                 TextEditingController();
 
             final List<String> messages = [];
 
             void send() {
-              final text =
-                  controller.text.trim();
+              final text = controller.text.trim();
 
               if (text.isEmpty) {
                 return;
@@ -1655,57 +1194,44 @@ jobs:
             @override
             Widget build(BuildContext context) {
               return Scaffold(
-                backgroundColor:
-                    Colors.white,
-
+                backgroundColor: Colors.white,
                 appBar: AppBar(
                   leading: IconButton(
-                    onPressed: () =>
-                        Navigator.pop(
-                            context),
-                    icon: const Icon(
-                        Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
                   ),
-                  title:
-                      Text(widget.username),
+                  title: Text(widget.username),
                   centerTitle: true,
+                  actions: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.more_horiz),
+                    ),
+                  ],
                 ),
-
                 body: Column(
                   children: [
-
                     Expanded(
                       child: messages.isEmpty
                           ? Center(
-                              child:
-                                  Column(
+                              child: Column(
                                 mainAxisAlignment:
-                                    MainAxisAlignment
-                                        .center,
+                                    MainAxisAlignment.center,
                                 children: [
-
                                   const CircleAvatar(
                                     radius: 42,
-                                    backgroundColor:
-                                        Color(
-                                            0xFFE5E5E5),
+                                    backgroundColor: Color(0xFFE5E5E5),
                                     child: Icon(
                                       Icons.person,
                                       size: 50,
-                                      color:
-                                          Colors.white,
+                                      color: Colors.white,
                                     ),
                                   ),
-
-                                  const SizedBox(
-                                      height: 12),
-
+                                  const SizedBox(height: 12),
                                   Text(
                                     widget.username,
-                                    style:
-                                        const TextStyle(
-                                      fontWeight:
-                                          FontWeight.bold,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
                                       fontSize: 18,
                                     ),
                                   ),
@@ -1713,94 +1239,57 @@ jobs:
                               ),
                             )
                           : ListView.builder(
-                              padding:
-                                  const EdgeInsets
-                                      .all(15),
-                              itemCount:
-                                  messages.length,
-                              itemBuilder:
-                                  (_, index) {
+                              padding: const EdgeInsets.all(15),
+                              itemCount: messages.length,
+                              itemBuilder: (_, index) {
                                 return Align(
-                                  alignment:
-                                      Alignment
-                                          .centerLeft,
-                                  child:
-                                      Container(
-                                    margin:
-                                        const EdgeInsets
-                                            .only(
+                                  alignment: Alignment.centerLeft,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(
                                       bottom: 10,
                                     ),
-                                    padding:
-                                        const EdgeInsets
-                                            .all(12),
-                                    decoration:
-                                        BoxDecoration(
-                                      color:
-                                          const Color(
-                                              0xFFF1F1F1),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F1F1),
                                       borderRadius:
-                                          BorderRadius
-                                              .circular(
-                                                  18),
+                                          BorderRadius.circular(18),
                                     ),
-                                    child: Text(
-                                      messages[
-                                          index],
-                                    ),
+                                    child: Text(messages[index]),
                                   ),
                                 );
                               },
                             ),
                     ),
-
                     SafeArea(
                       top: false,
                       child: Container(
-                        padding:
-                            const EdgeInsets
-                                .all(10),
-                        color:
-                            const Color(
-                                0xFFF5F5F5),
+                        padding: const EdgeInsets.all(10),
+                        color: const Color(0xFFF5F5F5),
                         child: Row(
                           children: [
-
+                            const Icon(Icons.camera_alt_outlined),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
-                                controller:
-                                    controller,
-                                decoration:
-                                    InputDecoration(
-                                  hintText:
-                                      'رسالة...',
+                                controller: controller,
+                                decoration: InputDecoration(
+                                  hintText: 'رسالة...',
                                   filled: true,
-                                  fillColor:
-                                      Colors.white,
-                                  border:
-                                      OutlineInputBorder(
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
                                     borderRadius:
-                                        BorderRadius
-                                            .circular(
-                                                25),
-                                    borderSide:
-                                        BorderSide
-                                            .none,
+                                        BorderRadius.circular(25),
+                                    borderSide: BorderSide.none,
                                   ),
                                 ),
-                                onSubmitted:
-                                    (_) => send(),
+                                onSubmitted: (_) => send(),
                               ),
                             ),
-
                             IconButton(
                               onPressed: send,
-                              icon:
-                                  const Icon(
+                              icon: const Icon(
                                 Icons.send,
-                                color:
-                                    Color(
-                                        0xFFFE2C55),
+                                color: Color(0xFFFE2C55),
                               ),
                             ),
                           ],
@@ -1815,7 +1304,7 @@ jobs:
           DART
 
       # =========================================================
-      # 13. Profile
+      # 11. Profile
       # =========================================================
       - name: Create Profile Screen
         shell: bash
@@ -1826,6 +1315,7 @@ jobs:
 
           cat > profile_screen.dart <<'DART'
           import 'package:flutter/material.dart';
+
           import 'drawer_menu.dart';
 
           class ProfileScreen extends StatelessWidget {
@@ -1834,221 +1324,154 @@ jobs:
             @override
             Widget build(BuildContext context) {
               return Scaffold(
-                backgroundColor:
-                    Colors.white,
-
-                endDrawer:
-                    const DrawerMenu(),
-
+                backgroundColor: Colors.white,
+                endDrawer: const DrawerMenu(),
                 appBar: AppBar(
+                  leading: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.person_add_alt),
+                  ),
                   title: const Text(
                     'إعجاب',
                     style: TextStyle(
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   centerTitle: true,
-
                   actions: [
                     Builder(
                       builder: (context) {
                         return IconButton(
                           onPressed: () {
-                            Scaffold.of(context)
-                                .openEndDrawer();
+                            Scaffold.of(context).openEndDrawer();
                           },
-                          icon: const Icon(
-                              Icons.menu),
+                          icon: const Icon(Icons.menu),
                         );
                       },
                     ),
                   ],
                 ),
-
                 body: ListView(
                   children: [
-
                     const SizedBox(height: 18),
-
                     const CircleAvatar(
                       radius: 47,
-                      backgroundColor:
-                          Colors.black,
+                      backgroundColor: Colors.black,
                       child: Icon(
                         Icons.person,
-                        color:
-                            Colors.white,
+                        color: Colors.white,
                         size: 55,
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     const Center(
                       child: Text(
-                        'مستخدم إعجاب',
+                        'إعجاب',
                         style: TextStyle(
                           fontSize: 25,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-
                     const Center(
                       child: Text(
                         '@ejab_user',
                         style: TextStyle(
-                          color:
-                              Colors.grey,
+                          color: Colors.grey,
                           fontSize: 16,
                         ),
                       ),
                     ),
-
-                    const SizedBox(
-                        height: 18),
-
+                    const SizedBox(height: 18),
                     const Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-
                         _Stat(
-                          number: '0',
+                          number: '50',
                           title: 'أتابعه',
                         ),
-
                         _Stat(
                           number: '0',
                           title: 'متابعين',
                         ),
-
                         _Stat(
                           number: '0',
-                          title:
-                              'تسجيلات الإعجاب',
+                          title: 'تسجيلات الإعجاب',
                         ),
                       ],
                     ),
-
-                    const SizedBox(
-                        height: 17),
-
+                    const SizedBox(height: 17),
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-
                         ElevatedButton(
                           onPressed: () {},
-                          style:
-                              ElevatedButton
-                                  .styleFrom(
+                          style: ElevatedButton.styleFrom(
                             backgroundColor:
-                                const Color(
-                                    0xFFFE2C55),
-                            foregroundColor:
-                                Colors.white,
-                            minimumSize:
-                                const Size(
-                                    150, 48),
-                            shape:
-                                RoundedRectangleBorder(
+                                const Color(0xFFFE2C55),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(150, 48),
+                            shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                          7),
+                                  BorderRadius.circular(7),
                             ),
                           ),
-                          child:
-                              const Text(
+                          child: const Text(
                             'متابعة',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-
-                        const SizedBox(
-                            width: 8),
-
+                        const SizedBox(width: 8),
                         OutlinedButton(
                           onPressed: () {},
-                          style:
-                              OutlinedButton
-                                  .styleFrom(
-                            foregroundColor:
-                                Colors.black,
-                            minimumSize:
-                                const Size(
-                                    150, 48),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.black,
+                            minimumSize: const Size(150, 48),
+                            side: BorderSide.none,
                             backgroundColor:
-                                const Color(
-                                    0xFFF2F2F2),
-                            side: BorderSide
-                                .none,
-                            shape:
-                                RoundedRectangleBorder(
+                                const Color(0xFFF2F2F2),
+                            shape: RoundedRectangleBorder(
                               borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                          7),
+                                  BorderRadius.circular(7),
                             ),
                           ),
-                          child:
-                              const Text(
+                          child: const Text(
                             'مراسلة',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
-
-                    const SizedBox(
-                        height: 15),
-
+                    const SizedBox(height: 15),
                     const Center(
                       child: Text(
-                        'مرحباً بكم في إعجاب ❤️',
+                        'أهلاً بك في إعجاب ❤️',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight:
-                              FontWeight.w600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-
-                    const SizedBox(
-                        height: 15),
-
+                    const SizedBox(height: 15),
                     const Divider(),
-
-                    const SizedBox(
-                        height: 12),
-
+                    const SizedBox(height: 12),
                     const Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment
-                              .center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                            Icons.grid_view),
+                        Icon(Icons.grid_view),
                         SizedBox(width: 35),
-                        Icon(
-                            Icons.favorite_border),
+                        Icon(Icons.favorite_border),
                       ],
                     ),
-
-                    const SizedBox(
-                        height: 20),
-
+                    const SizedBox(height: 20),
                     GridView.builder(
                       shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(),
-                      padding:
-                          const EdgeInsets.all(
-                              2),
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(2),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
@@ -2056,16 +1479,21 @@ jobs:
                         mainAxisSpacing: 2,
                       ),
                       itemCount: 9,
-                      itemBuilder:
-                          (_, index) {
+                      itemBuilder: (_, index) {
                         return Container(
-                          color:
-                              Colors.black12,
-                          child:
-                              const Icon(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.grey.shade900,
+                                Colors.grey.shade700,
+                              ],
+                            ),
+                          ),
+                          child: const Icon(
                             Icons.play_arrow,
-                            color:
-                                Colors.black54,
+                            color: Colors.white70,
                           ),
                         );
                       },
@@ -2076,9 +1504,7 @@ jobs:
             }
           }
 
-          class _Stat
-              extends StatelessWidget {
-
+          class _Stat extends StatelessWidget {
             final String number;
             final String title;
 
@@ -2088,29 +1514,22 @@ jobs:
             });
 
             @override
-            Widget build(
-                BuildContext context) {
+            Widget build(BuildContext context) {
               return SizedBox(
                 width: 110,
                 child: Column(
                   children: [
-
                     Text(
                       number,
-                      style:
-                          const TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     Text(
                       title,
-                      style:
-                          const TextStyle(
-                        color:
-                            Colors.grey,
+                      style: const TextStyle(
+                        color: Colors.grey,
                         fontSize: 12,
                       ),
                     ),
@@ -2122,7 +1541,7 @@ jobs:
           DART
 
       # =========================================================
-      # 14. Drawer Menu
+      # 12. Drawer
       # =========================================================
       - name: Create Drawer Menu
         shell: bash
@@ -2133,6 +1552,7 @@ jobs:
 
           cat > drawer_menu.dart <<'DART'
           import 'package:flutter/material.dart';
+
           import 'settings_privacy_screen.dart';
 
           class DrawerMenu extends StatelessWidget {
@@ -2141,79 +1561,51 @@ jobs:
             @override
             Widget build(BuildContext context) {
               return Drawer(
-                backgroundColor:
-                    Colors.white,
-                width:
-                    MediaQuery.of(context)
-                            .size
-                            .width *
-                        0.86,
-
+                backgroundColor: Colors.white,
+                width: MediaQuery.of(context).size.width * 0.86,
                 child: SafeArea(
                   child: ListView(
-                    padding:
-                        EdgeInsets.zero,
+                    padding: EdgeInsets.zero,
                     children: [
-
-                      const SizedBox(
-                          height: 18),
+                      const SizedBox(height: 18),
 
                       const Padding(
-                        padding:
-                            EdgeInsets.symmetric(
-                          horizontal: 28,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 28),
                         child: Text(
-                          'الحساب',
-                          textAlign:
-                              TextAlign.right,
-                          style:
-                              TextStyle(
-                            color:
-                                Colors.grey,
+                          'الخدمات',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: Colors.grey,
                             fontSize: 15,
                           ),
                         ),
                       ),
 
                       _item(
-                        icon: Icons
-                            .account_balance_wallet_outlined,
-                        title: 'الرصيد',
+                        icon: Icons.account_balance_wallet_outlined,
+                        title: 'المحفظة',
                         onTap: () {
                           _showMessage(
                             context,
-                            'الرصيد متاح في النسخة القادمة',
+                            'المحفظة متاحة قريباً',
                           );
                         },
                       ),
 
-                      const Divider(),
-
-                      const Padding(
-                        padding:
-                            EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          'الأدوات',
-                          textAlign:
-                              TextAlign.right,
-                          style:
-                              TextStyle(
-                            color:
-                                Colors.grey,
-                            fontSize: 15,
-                          ),
-                        ),
+                      _item(
+                        icon: Icons.favorite_border,
+                        title: 'المفضلة',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'المفضلة',
+                          );
+                        },
                       ),
 
                       _item(
-                        icon:
-                            Icons.history,
-                        title:
-                            'مركز الأنشطة',
+                        icon: Icons.history,
+                        title: 'مركز الأنشطة',
                         onTap: () {
                           _showMessage(
                             context,
@@ -2223,44 +1615,30 @@ jobs:
                       ),
 
                       _item(
-                        icon:
-                            Icons.qr_code_2,
-                        title:
-                            'رمز QR الخاص بك',
+                        icon: Icons.qr_code_2,
+                        title: 'رمز QR الخاص بي',
                         onTap: () {
                           showDialog(
                             context: context,
-                            builder: (_) =>
-                                AlertDialog(
-                              title:
-                                  const Text(
-                                'رمز QR',
+                            builder: (_) => AlertDialog(
+                              title: const Text(
+                                'رمز QR الخاص بك',
                               ),
-                              content:
-                                  const SizedBox(
+                              content: const SizedBox(
                                 width: 200,
                                 height: 200,
-                                child:
-                                    Center(
-                                  child:
-                                      Icon(
-                                    Icons
-                                        .qr_code_2,
-                                    size:
-                                        170,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.qr_code_2,
+                                    size: 170,
                                   ),
                                 ),
                               ),
                               actions: [
                                 TextButton(
-                                  onPressed:
-                                      () =>
-                                          Navigator.pop(
-                                              context),
-                                  child:
-                                      const Text(
-                                    'إغلاق',
-                                  ),
+                                  onPressed: () =>
+                                      Navigator.pop(context),
+                                  child: const Text('إغلاق'),
                                 ),
                               ],
                             ),
@@ -2270,27 +1648,37 @@ jobs:
 
                       const Divider(),
 
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 10,
+                        ),
+                        child: Text(
+                          'الإبداع',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+
                       _item(
-                        icon:
-                            Icons.auto_awesome,
-                        title:
-                            'Ejab Studio',
+                        icon: Icons.auto_awesome,
+                        title: 'إعجاب Studio',
                         onTap: () {
                           _showMessage(
                             context,
-                            'استوديو إعجاب',
+                            'إعجاب Studio',
                           );
                         },
                       ),
 
                       _item(
-                        icon:
-                            Icons.settings_outlined,
-                        title:
-                            'الإعدادات والخصوصية',
+                        icon: Icons.settings_outlined,
+                        title: 'الإعدادات والخصوصية',
                         onTap: () {
-                          Navigator.pop(
-                              context);
+                          Navigator.pop(context);
 
                           Navigator.push(
                             context,
@@ -2314,35 +1702,25 @@ jobs:
             }) {
               return ListTile(
                 contentPadding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 25,
-                ),
-
-                leading:
-                    const Icon(
+                    const EdgeInsets.symmetric(horizontal: 25),
+                leading: const Icon(
                   Icons.chevron_left,
                   color: Colors.grey,
                 ),
-
-                trailing:
-                    Icon(
+                trailing: Icon(
                   icon,
                   color: Colors.black,
                   size: 27,
                 ),
-
                 title: Text(
                   title,
-                  textAlign:
-                      TextAlign.right,
-                  style:
-                      const TextStyle(
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 17,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 onTap: onTap,
               );
             }
@@ -2353,14 +1731,11 @@ jobs:
             ) {
               Navigator.pop(context);
 
-              ScaffoldMessenger.of(
-                      context)
-                  .showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     message,
-                    textAlign:
-                        TextAlign.right,
+                    textAlign: TextAlign.right,
                   ),
                 ),
               );
@@ -2369,7 +1744,7 @@ jobs:
           DART
 
       # =========================================================
-      # 15. Settings & Privacy
+      # 13. Settings & Privacy
       # =========================================================
       - name: Create Settings Privacy
         shell: bash
@@ -2381,46 +1756,29 @@ jobs:
           cat > settings_privacy_screen.dart <<'DART'
           import 'package:flutter/material.dart';
 
-          class SettingsPrivacyScreen
-              extends StatelessWidget {
-
-            const SettingsPrivacyScreen({
-              super.key,
-            });
+          class SettingsPrivacyScreen extends StatelessWidget {
+            const SettingsPrivacyScreen({super.key});
 
             @override
-            Widget build(
-                BuildContext context) {
+            Widget build(BuildContext context) {
               return Scaffold(
-                backgroundColor:
-                    const Color(0xFFF5F5F5),
-
+                backgroundColor: const Color(0xFFF5F5F5),
                 appBar: AppBar(
                   title: const Text(
                     'الإعدادات والخصوصية',
                     style: TextStyle(
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   centerTitle: true,
-
                   leading: IconButton(
-                    onPressed: () =>
-                        Navigator.pop(
-                            context),
-                    icon: const Icon(
-                        Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
                   ),
                 ),
-
                 body: ListView(
-                  padding:
-                      const EdgeInsets.only(
-                    bottom: 30,
-                  ),
+                  padding: const EdgeInsets.only(bottom: 30),
                   children: [
-
                     _section(
                       title: 'الحساب',
                       items: [
@@ -2463,10 +1821,31 @@ jobs:
                         _row(
                           Icons.favorite,
                           'فيديوهات أعجبتك',
+                          value: 'لك فقط',
+                        ),
+                        _row(
+                          Icons.people_outline,
+                          'قائمة المتابعة',
+                          value: 'لك فقط',
                         ),
                         _row(
                           Icons.visibility_outlined,
-                          'المشاهدات',
+                          'المشاهدون',
+                          value: 'تشغيل',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'الإشعارات',
+                      items: [
+                        _row(
+                          Icons.notifications_none,
+                          'الإشعارات',
+                        ),
+                        _row(
+                          Icons.live_tv_outlined,
+                          'البث المباشر',
                         ),
                       ],
                     ),
@@ -2475,16 +1854,17 @@ jobs:
                       title: 'المحتوى',
                       items: [
                         _row(
-                          Icons.video_collection_outlined,
-                          'إدارة المنشورات',
-                        ),
-                        _row(
                           Icons.music_note,
                           'الموسيقى',
                         ),
                         _row(
-                          Icons.live_tv_outlined,
-                          'LIVE',
+                          Icons.download,
+                          'التنزيلات',
+                          value: 'تشغيل',
+                        ),
+                        _row(
+                          Icons.data_saver_off,
+                          'توفير البيانات',
                         ),
                       ],
                     ),
@@ -2497,22 +1877,23 @@ jobs:
                           'مركز المساعدة',
                         ),
                         _row(
+                          Icons.lock_outline,
+                          'مركز الخصوصية',
+                        ),
+                        _row(
                           Icons.info_outline,
-                          'حول تطبيق إعجاب',
+                          'الشروط والسياسات',
                         ),
                       ],
                     ),
 
-                    const SizedBox(
-                        height: 15),
+                    const SizedBox(height: 15),
 
                     const Center(
                       child: Text(
                         'إعجاب | Ejab v1.0.0',
-                        style:
-                            TextStyle(
-                          color:
-                              Colors.grey,
+                        style: TextStyle(
+                          color: Colors.grey,
                           fontSize: 13,
                         ),
                       ),
@@ -2527,14 +1908,10 @@ jobs:
               required List<Widget> items,
             }) {
               return Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-
                   Padding(
-                    padding:
-                        const EdgeInsets
-                            .fromLTRB(
+                    padding: const EdgeInsets.fromLTRB(
                       20,
                       18,
                       20,
@@ -2542,34 +1919,21 @@ jobs:
                     ),
                     child: Text(
                       title,
-                      style:
-                          const TextStyle(
-                        color:
-                            Colors.grey,
+                      style: const TextStyle(
+                        color: Colors.grey,
                         fontSize: 14,
                       ),
                     ),
                   ),
-
                   Container(
                     margin:
-                        const EdgeInsets
-                            .symmetric(
-                      horizontal: 12,
+                        const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    decoration:
-                        BoxDecoration(
-                      color:
-                          Colors.white,
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                                  14),
-                    ),
-                    child:
-                        Column(
-                      children:
-                          items,
+                    child: Column(
+                      children: items,
                     ),
                   ),
                 ],
@@ -2578,34 +1942,37 @@ jobs:
 
             Widget _row(
               IconData icon,
-              String title,
-            ) {
+              String title, {
+              String? value,
+            }) {
               return ListTile(
-                leading:
-                    const Icon(
+                minVerticalPadding: 9,
+                leading: const Icon(
                   Icons.chevron_left,
                   color: Colors.grey,
                 ),
-
-                trailing:
-                    Icon(
+                trailing: Icon(
                   icon,
                   color: Colors.grey,
                   size: 24,
                 ),
-
                 title: Text(
                   title,
-                  textAlign:
-                      TextAlign.right,
-                  style:
-                      const TextStyle(
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
                     fontSize: 16,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-
+                subtitle: value == null
+                    ? null
+                    : Text(
+                        value,
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
                 onTap: () {},
               );
             }
@@ -2613,7 +1980,269 @@ jobs:
           DART
 
       # =========================================================
-      # 16. Android App Label
+      # 14. Create Post
+      # =========================================================
+      - name: Create Post Screen
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app/lib/screens
+
+          cat > create_post_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class CreatePostScreen extends StatefulWidget {
+            const CreatePostScreen({super.key});
+
+            @override
+            State<CreatePostScreen> createState() =>
+                _CreatePostScreenState();
+          }
+
+          class _CreatePostScreenState
+              extends State<CreatePostScreen> {
+            int selected = 2;
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.black,
+                body: SafeArea(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          color: const Color(0xFF111111),
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.videocam_outlined,
+                                  color: Colors.white38,
+                                  size: 80,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'كاميرا إعجاب',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 31,
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 15,
+                        right: 15,
+                        child: Column(
+                          children: const [
+                            Icon(
+                              Icons.flip_camera_ios_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(height: 25),
+                            Icon(
+                              Icons.flash_on_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(height: 25),
+                            Icon(
+                              Icons.timer_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(height: 25),
+                            Icon(
+                              Icons.speed,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 25,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                _mode('نص', 0),
+                                _mode('صورة', 1),
+                                _mode('15 ث', 2),
+                                _mode('60 ث', 3),
+                                _mode('10 د', 4),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              width: 78,
+                              height: 78,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 5,
+                                ),
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 62,
+                                  height: 62,
+                                  decoration:
+                                      const BoxDecoration(
+                                    color: Color(0xFFFE2C55),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _mode(String text, int index) {
+              final selectedMode = selected == index;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selected = index;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ),
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      color: selectedMode
+                          ? Colors.white
+                          : Colors.white54,
+                      fontWeight: selectedMode
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 15. Friends
+      # =========================================================
+      - name: Create Friends Screen
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app/lib/screens
+
+          cat > friends_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class FriendsScreen extends StatelessWidget {
+            const FriendsScreen({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.white,
+                appBar: AppBar(
+                  title: const Text(
+                    'الأصدقاء',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+                ),
+                body: ListView(
+                  padding: const EdgeInsets.all(18),
+                  children: [
+                    const Text(
+                      'اكتشف أصدقاء جدد',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    for (int i = 1; i <= 6; i++)
+                      Card(
+                        elevation: 0,
+                        color: const Color(0xFFF7F7F7),
+                        child: ListTile(
+                          leading: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color(0xFFFE2C55),
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('متابعة'),
+                          ),
+                          trailing: const CircleAvatar(
+                            backgroundColor: Color(0xFFE5E5E5),
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                          title: Text(
+                            'مستخدم إعجاب $i',
+                            textAlign: TextAlign.right,
+                          ),
+                          subtitle: Text(
+                            '@ejab_user$i',
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 16. Android App Name
       # =========================================================
       - name: Configure Android App Name
         shell: bash
@@ -2624,23 +2253,52 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
-          p = Path(
+          manifest = Path(
               "android/app/src/main/AndroidManifest.xml"
           )
 
-          text = p.read_text()
+          text = manifest.read_text()
 
-          text = text.replace(
-              'android:label="ejab_app"',
-              'android:label="إعجاب | Ejab"'
+          text = re.sub(
+              r'android:label="[^"]*"',
+              'android:label="إعجاب | Ejab"',
+              text,
+              count=1
           )
 
-          p.write_text(text)
+          manifest.write_text(text)
           PY
 
       # =========================================================
-      # 17. Pub Get
+      # 17. Remove Default Flutter Test References
+      # =========================================================
+      - name: Verify Clean Project
+        shell: bash
+        run: |
+          set -e
+
+          cd clean_ejab_app
+
+          test ! -f test/widget_test.dart
+
+          test -f lib/main.dart
+          test -f lib/screens/main_navigation.dart
+          test -f lib/screens/home_feed_screen.dart
+          test -f lib/screens/search_screen.dart
+          test -f lib/screens/inbox_screen.dart
+          test -f lib/screens/chat_detail_screen.dart
+          test -f lib/screens/profile_screen.dart
+          test -f lib/screens/drawer_menu.dart
+          test -f lib/screens/settings_privacy_screen.dart
+          test -f lib/screens/create_post_screen.dart
+          test -f lib/screens/friends_screen.dart
+
+          echo "Ejab project structure verified successfully."
+
+      # =========================================================
+      # 18. Flutter Pub Get
       # =========================================================
       - name: Flutter Pub Get
         shell: bash
@@ -2652,7 +2310,7 @@ jobs:
           flutter pub get
 
       # =========================================================
-      # 18. Format
+      # 19. Format
       # =========================================================
       - name: Format Dart Code
         shell: bash
@@ -2664,7 +2322,7 @@ jobs:
           dart format lib
 
       # =========================================================
-      # 19. Analyze
+      # 20. Analyze
       # =========================================================
       - name: Analyze Flutter Project
         shell: bash
@@ -2676,7 +2334,7 @@ jobs:
           flutter analyze
 
       # =========================================================
-      # 20. Build Release APK
+      # 21. Build Release APK
       # =========================================================
       - name: Build Release APK
         shell: bash
@@ -2685,14 +2343,12 @@ jobs:
 
           cd clean_ejab_app
 
-          flutter build apk \
-            --release \
-            --split-per-abi=false
+          flutter build apk --release
 
       # =========================================================
-      # 21. Prepare APK
+      # 22. Prepare APK
       # =========================================================
-      - name: Prepare Ejab APK
+      - name: Prepare APK Artifact
         shell: bash
         run: |
           set -e
@@ -2703,8 +2359,13 @@ jobs:
             clean_ejab_app/build/app/outputs/flutter-apk/app-release.apk \
             output/Ejab.apk
 
+          test -f output/Ejab.apk
+
+          echo "APK successfully created:"
+          ls -lh output/Ejab.apk
+
       # =========================================================
-      # 22. Upload APK
+      # 23. Upload APK
       # =========================================================
       - name: Upload Ejab APK
         uses: actions/upload-artifact@v4
