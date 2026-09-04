@@ -1,4 +1,4 @@
-name: Deploy Iejab App Official UI
+name: Deploy Najma App Luxury Dark UI
 on:
   push:
     branches: [ main ]
@@ -22,16 +22,16 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Create Official Flutter Project
+    - name: Create Official Najma Project
       run: |
-        flutter create clean_iejab_app --org com.iejab.app --project-name iejab_app
+        flutter create clean_iejab_app --org com.najma.app --project-name iejab_app
         rm -rf clean_iejab_app/lib/*
 
-    - name: Inject Fully Fixed Iejab UI Files
+    - name: Inject Luxury Dark UI Files
       run: |
         cd clean_iejab_app/lib/
         
-        # 1. Main entry file with Navigation
+        # 1. Main entry file
         cat << 'EOF' > main.dart
         import 'package:flutter/material.dart';
         import 'main_navigation.dart';
@@ -41,8 +41,12 @@ jobs:
           @override
           Widget build(BuildContext context) {
             return MaterialApp(
-              title: 'إعجاب',
-              theme: ThemeData(primarySwatch: Colors.purple, useMaterial3: true),
+              title: 'نجمة',
+              theme: ThemeData.dark().copyWith(
+                scaffoldBackgroundColor: const Color(0xFF0F101D),
+                primaryColor: const Color(0xFF6C5CE7),
+                colorScheme: const ColorScheme.dark(primary: Color(0xFF6C5CE7), secondary: Color(0xFF00CEC9)),
+              ),
               debugShowCheckedModeBanner: false,
               home: const MainNavigationScreen(),
             );
@@ -50,7 +54,7 @@ jobs:
         }
         EOF
 
-        # 2. Navigation Screen
+        # 2. Main Navigation
         cat << 'EOF' > main_navigation.dart
         import 'package:flutter/material.dart';
         import 'star_chat.dart';
@@ -64,7 +68,7 @@ jobs:
           State<MainNavigationScreen> createState() => _MainNavigationScreenState();
         }
         class _MainNavigationScreenState extends State<MainNavigationScreen> {
-          int _currentIndex = 0;
+          int _currentIndex = 2; 
           final List<Widget> _screens = [
             const StarChatScreen(),
             const StarLiveScreen(),
@@ -79,15 +83,16 @@ jobs:
               bottomNavigationBar: BottomNavigationBar(
                 currentIndex: _currentIndex,
                 type: BottomNavigationBarType.fixed,
-                selectedItemColor: Colors.purple,
-                unselectedItemColor: Colors.grey,
+                backgroundColor: const Color(0xFF070814),
+                selectedItemColor: const Color(0xFF6C5CE7),
+                unselectedItemColor: Colors.grey.shade600,
                 onTap: (index) => setState(() => _currentIndex = index),
                 items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'الدردشة'),
-                  BottomNavigationBarItem(icon: Icon(Icons.live_tv), label: 'البث'),
-                  BottomNavigationBarItem(icon: Icon(Icons.video_library), label: 'ريلز'),
-                  BottomNavigationBarItem(icon: Icon(Icons.store), label: 'المتجر'),
-                  BottomNavigationBarItem(icon: Icon(Icons.wallet), label: 'المحفظة'),
+                  BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'رسائل'),
+                  BottomNavigationBarItem(icon: Icon(Icons.live_tv_outlined), activeIcon: Icon(Icons.live_tv), label: 'بث مباشر'),
+                  BottomNavigationBarItem(icon: Icon(Icons.play_circle_outline), activeIcon: Icon(Icons.play_circle_fill), label: 'نجمة'),
+                  BottomNavigationBarItem(icon: Icon(Icons.explore_outlined), activeIcon: Icon(Icons.explore), label: 'استكشف'),
+                  BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), activeIcon: Icon(Icons.account_balance_wallet), label: 'محفظة'),
                 ],
               ),
             );
@@ -103,15 +108,35 @@ jobs:
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              appBar: AppBar(title: const Text('شات النجوم - إعجاب'), backgroundColor: Colors.purple),
+              appBar: AppBar(
+                title: const Text('رسائل', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                backgroundColor: const Color(0xFF0F101D),
+                elevation: 0,
+                actions: [IconButton(icon: const Icon(Icons.edit_note, color: Colors.white), onPressed: () {})],
+              ),
               body: ListView.builder(
-                itemCount: 10,
-                itemBuilder: (context, index) => ListTile(
-                  leading: const CircleAvatar(backgroundColor: Colors.purple, child: Icon(Icons.person, color: Colors.white)),
-                  title: Text('صديق النجوم رقم ${index + 1}'),
-                  subtitle: const Text('مرحباً بك في تطبيق إعجاب الجديد...'),
-                  trailing: const Text('١٠:٣٠ ص'),
-                ),
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  final names = ['أحمد المقبلي', 'مريم علي', 'فريق الدعم', 'أسامة خالد', 'يسرى محمد'];
+                  final msgs = ['مرحباً بك، هل شاهدت البث اليوم؟', 'تم إرسال الهدية بنجاح 🎁', 'كيف يمكننا مساعدتك يا هندسة؟', 'التطبيق فخم جداً عاشت يدك', 'هل رصيد المحفظة محدث؟'];
+                  final times = ['١٢:٠١ م', '١١:٤٥ ص', 'أمس', 'أمس', '٢ سبتمبر'];
+                  return ListTile(
+                    leading: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 25,
+                          backgroundColor: const Color(0xFF6C5CE7),
+                          child: Text(names[index][0], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                        if (index < 2)
+                          Positioned(bottom: 0, right: 0, child: Container(width: 12, height: 12, decoration: BoxDecoration(color: Colors.green, shape: BoxShape.circle, border: Border.all(color: const Color(0xFF0F101D), width: 2)))),
+                      ],
+                    ),
+                    title: Text(names[index], style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    subtitle: Text(msgs[index], style: TextStyle(color: Colors.grey.shade400, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    trailing: Text(times[index], style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
+                  );
+                },
               ),
             );
           }
@@ -126,23 +151,47 @@ jobs:
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              appBar: AppBar(title: const Text('البث المباشر'), backgroundColor: Colors.purple),
+              appBar: AppBar(title: const Text('بث مباشر حقيقي', style: TextStyle(fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFF0F101D), elevation: 0),
               body: GridView.builder(
-                padding: const EdgeInsets.all(10),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10),
-                itemCount: 4,
-                itemBuilder: (context, index) => Container(
-                  color: Colors.black87,
-                  child: Stack(
-                    children: [
-                      Center(child: Icon(Icons.play_circle_fill, size: 50, color: Colors.white.withOpacity(0.6))),
-                      Positioned(
-                        top: 10, left: 10,
-                        child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), color: Colors.red, child: const Text('مباشر', style: TextStyle(color: Colors.white, fontSize: 12))),
-                      )
-                    ],
-                  ),
-                ),
+                padding: const EdgeInsets.all(12),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.8),
+                itemCount: 2,
+                itemBuilder: (context, index) {
+                  final hosts = ['الشيف جلال', 'لينا أحمد - طبخ'];
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F2033),
+                      borderRadius: BorderRadius.circular(16),
+                      image: DecorationImage(
+                        image: NetworkImage('https://picsum.photos{index + 10}'),
+                        fit: BoxFit.cover,
+                        colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.3), BoxBlendMode.srcOver),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: 10, left: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(8)),
+                            child: const Text('بث مباشر', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 12, right: 12, left: 12,
+                          child: Row(
+                            children: [
+                              const CircleAvatar(radius: 12, backgroundColor: Color(0xFF6C5CE7), child: Icon(Icons.person, size: 12, color: Colors.white)),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(hosts[index], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12), overflow: TextOverflow.ellipsis)),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                },
               ),
             );
           }
@@ -157,94 +206,18 @@ jobs:
           @override
           Widget build(BuildContext context) {
             return Scaffold(
-              backgroundColor: Colors.black,
               body: Stack(
                 children: [
-                  const Center(child: Icon(Icons.video_collection, size: 100, color: Colors.white24)),
-                  Positioned(
-                    bottom: 40, right: 20,
-                    child: Column(
-                      children: const [
-                        Icon(Icons.favorite, color: Colors.red, size: 35), Text('١.٢ م', style: TextStyle(color: Colors.white)),
-                        SizedBox(height: 15),
-                        Icon(Icons.comment, color: Colors.white, size: 35), Text('٤٥٠', style: TextStyle(color: Colors.white)),
-                      ],
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage('https://unsplash.com'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  )
-                ],
-              ),
-            );
-          }
-        }
-        EOF
-
-        # 6. Star Market Screen
-        cat << 'EOF' > star_market.dart
-        import 'package:flutter/material.dart';
-        class StarMarketScreen extends StatelessWidget {
-          const StarMarketScreen({super.key});
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('متجر النجوم الفاخر'), backgroundColor: Colors.purple),
-              body: ListView(
-                padding: const EdgeInsets.all(15),
-                children: [
-                  _buildMarketItem('الاشتراك المميز بلس', '\$ 9.99', Icons.star),
-                  _buildMarketItem('توثيق الحساب بالنجمة', '\$ 49.99', Icons.verified),
-                  _buildMarketItem('شارة التوثيق الذهبية', '\$ 99.99', Icons.workspace_premium),
-                ],
-              ),
-            );
-          }
-          Widget _buildMarketItem(String title, String price, IconData icon) {
-            return Card(
-              child: ListTile(
-                leading: Icon(icon, color: Colors.amber, size: 35),
-                title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('السعر: $price'),
-                trailing: ElevatedButton(onPressed: () {}, child: const Text('شراء')),
-              ),
-            );
-          }
-        }
-        EOF
-
-        # 7. StarPay Wallet Screen
-        cat << 'EOF' > starpay_wallet.dart
-        import 'package:flutter/material.dart';
-        class StarPayWalletScreen extends StatelessWidget {
-          const StarPayWalletScreen({super.key});
-          @override
-          Widget build(BuildContext context) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('محفظة ستار باي الإلكترونية'), backgroundColor: Colors.purple),
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.account_balance_wallet, size: 80, color: Colors.purple),
-                    const SizedBox(height: 20),
-                    const Text('رصيدك الحالي المتاح', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                    const Text('\$ 1,250.00', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.purple)),
-                    const SizedBox(height: 30),
-                    ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add), label: const Text('شحن رصيد المحفظة'))
-                  ],
-                ),
-              ),
-            );
-          }
-        }
-        EOF
-
-    - name: Build Official Integrated APK
-      run: |
-        cd clean_iejab_app
-        flutter pub get
-        flutter build apk --release
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: iejab-app-release-apk
-        path: clean_iejab_app/build/app/outputs/flutter-apk/app-release.apk
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
