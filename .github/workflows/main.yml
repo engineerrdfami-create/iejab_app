@@ -1,4 +1,4 @@
-name: Fresh Demo Build APK
+name: Deploy Iejab App Official UI
 on:
   push:
     branches: [ main ]
@@ -22,13 +22,225 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Create Official Running Flutter App
+    - name: Create Official Flutter Project
       run: |
         flutter create clean_iejab_app --org com.iejab.app --project-name iejab_app
+        rm -rf clean_iejab_app/lib/*
 
-    - name: Build Official Running APK
+    - name: Inject Fully Fixed Iejab UI Files
+      run: |
+        cd clean_iejab_app/lib/
+        
+        # 1. Main entry file with Navigation
+        cat << 'EOF' > main.dart
+        import 'package:flutter/material.dart';
+        import 'main_navigation.dart';
+        void main() => runApp(const MyApp());
+        class MyApp extends StatelessWidget {
+          const MyApp({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return MaterialApp(
+              title: 'إعجاب',
+              theme: ThemeData(primarySwatch: Colors.purple, useMaterial-design: true),
+              debugShowCheckedModeBanner: false,
+              home: const MainNavigationScreen(),
+            );
+          }
+        }
+        EOF
+
+        # 2. Navigation Screen
+        cat << 'EOF' > main_navigation.dart
+        import 'package:flutter/material.dart';
+        import 'star_chat.dart';
+        import 'star_live.dart';
+        import 'najma_reels.dart';
+        import 'star_market.dart';
+        import 'starpay_wallet.dart';
+        class MainNavigationScreen extends StatefulWidget {
+          const MainNavigationScreen({super.key});
+          @override
+          State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+        }
+        class _MainNavigationScreenState extends State<MainNavigationScreen> {
+          int _currentIndex = 0;
+          final List<Widget> _screens = [
+            const StarChatScreen(),
+            const StarLiveScreen(),
+            const NajmaReelsScreen(),
+            const StarMarketScreen(),
+            const StarPayWalletScreen(),
+          ];
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              body: _screens[_currentIndex],
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: Colors.purple,
+                unselectedItemColor: Colors.grey,
+                onTap: (index) => setState(() => _currentIndex = index),
+                items: const [
+                  BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'الدردشة'),
+                  BottomNavigationBarItem(icon: Icon(Icons.live_tv), label: 'البث'),
+                  BottomNavigationBarItem(icon: Icon(Icons.video_library), label: 'ريلز'),
+                  BottomNavigationBarItem(icon: Icon(Icons.store), label: 'المتجر'),
+                  BottomNavigationBarItem(icon: Icon(Icons.wallet), label: 'المحفظة'),
+                ],
+              ),
+            );
+          }
+        }
+        EOF
+
+        # 3. Star Chat Screen
+        cat << 'EOF' > star_chat.dart
+        import 'package:flutter/material.dart';
+        class StarChatScreen extends StatelessWidget {
+          const StarChatScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('شات النجوم - إعجاب'), backgroundColor: Colors.purple),
+              body: ListView.builder(
+                itemCount: 10,
+                itemBuilder: (context, index) => ListTile(
+                  leading: const CircleAvatar(backgroundColor: Colors.purple, child: Icon(Icons.person, color: Colors.white)),
+                  title: Text('صديق النجوم رقم ${index + 1}'),
+                  subtitle: const Text('مرحباً بك في تطبيق إعجاب الجديد...'),
+                  trailing: const Text('١٠:٣٠ ص'),
+                ),
+              ),
+            );
+          }
+        }
+        EOF
+
+        # 4. Star Live Screen
+        cat << 'EOF' > star_live.dart
+        import 'package:flutter/material.dart';
+        class StarLiveScreen extends StatelessWidget {
+          const StarLiveScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('البث المباشر'), backgroundColor: Colors.purple),
+              body: GridView.builder(
+                padding: const EdgeInsets.all(10),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10),
+                itemCount: 4,
+                itemBuilder: (context, index) => Container(
+                  color: Colors.black87,
+                  child: Stack(
+                    children: [
+                      Center(child: Icon(Icons.play_circle_fill, size: 50, color: Colors.white.withOpacity(0.6))),
+                      Positioned(
+                        top: 10, left: 10,
+                        child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), color: Colors.red, child: const Text('مباشر', style: TextStyle(color: Colors.white, fontSize: 12))),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+        EOF
+
+        # 5. Najma Reels Screen
+        cat << 'EOF' > najma_reels.dart
+        import 'package:flutter/material.dart';
+        class NajmaReelsScreen extends StatelessWidget {
+          const NajmaReelsScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              backgroundColor: Colors.black,
+              body: Stack(
+                children: [
+                  const Center(child: Icon(Icons.video_collection, size: 100, color: Colors.white24)),
+                  Positioned(
+                    bottom: 40, right: 20,
+                    child: Column(
+                      children: const [
+                        Icon(Icons.favorite, color: Colors.red, size: 35), Text('١.٢ م', style: TextStyle(color: Colors.white)),
+                        SizedBox(height: 15),
+                        Icon(Icons.comment, color: Colors.white, size: 35), Text('٤٥٠', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            );
+          }
+        }
+        EOF
+
+        # 6. Star Market Screen
+        cat << 'EOF' > star_market.dart
+        import 'package:flutter/material.dart';
+        class StarMarketScreen extends StatelessWidget {
+          const StarMarketScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('متجر النجوم الفاخر'), backgroundColor: Colors.purple),
+              body: ListView(
+                padding: const EdgeInsets.all(15),
+                children: [
+                  _buildMarketItem('الاشتراك المميز بلس', '\$ 9.99', Icons.star),
+                  _buildMarketItem('توثيق الحساب بالنجمة', '\$ 49.99', Icons.verified),
+                  _buildMarketItem('شارة التوثيق الذهبية', '\$ 99.99', Icons.workspace_premium),
+                ],
+              ),
+            );
+          }
+          Widget _buildMarketItem(String title, String price, IconData icon) {
+            return Card(
+              child: ListTile(
+                leading: Icon(icon, color: Colors.amber, size: 35),
+                title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('السعر: $price'),
+                trailing: ElevatedButton(onPressed: () {}, child: const Text('شراء')),
+              ),
+            );
+          }
+        }
+        EOF
+
+        # 7. StarPay Wallet Screen
+        cat << 'EOF' > starpay_wallet.dart
+        import 'package:flutter/material.dart';
+        class StarPayWalletScreen extends StatelessWidget {
+          const StarPayWalletScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('محفظة ستار باي الإلكترونية'), backgroundColor: Colors.purple),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.account_balance_wallet, size: 80, color: Colors.purple),
+                    const SizedBox(height: 20),
+                    const Text('رصيدك الحالي المتاح', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                    const Text('\$ 1,250.00', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.purple)),
+                    const SizedBox(height: 30),
+                    ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add), label: const Text('شحن رصيد المحفظة'))
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+        EOF
+
+    - name: Build Official Integrated APK
       run: |
         cd clean_iejab_app
+        flutter pub get
         flutter build apk --release
 
     - name: Upload APK Artifact
