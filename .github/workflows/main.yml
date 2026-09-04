@@ -1,0 +1,33 @@
+name: Unzip and Build APK
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  unzip_and_build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Unzip Project Files
+      run: |
+        sudo apt-get install -y unzip
+        unzip -o lib.zip
+        unzip -o .github.zip
+        rm -rf *.zip
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+
+    - name: Build APK
+      run: flutter build apk --release
