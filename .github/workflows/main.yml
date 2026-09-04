@@ -1,156 +1,2494 @@
-name: Build Najma Android APK
+name: Build Najma TikTok-Style Full App
 
 on:
   push:
     branches:
       - main
-      - master
-
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    name: Build Najma APK
+    name: Build Najma Android APK
     runs-on: ubuntu-latest
 
     steps:
 
-      # --------------------------------
-      # 1. تحميل المشروع
-      # --------------------------------
+      # =========================================================
+      # 1. Checkout
+      # =========================================================
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # =========================================================
+      # 2. Java
+      # =========================================================
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+          cache: gradle
 
-      # --------------------------------
-      # 2. تثبيت Flutter
-      # --------------------------------
+      # =========================================================
+      # 3. Flutter
+      # =========================================================
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-
-      # --------------------------------
-      # 3. إنشاء مشروع Flutter إذا لم يكن موجودًا
-      # --------------------------------
+      # =========================================================
+      # 4. Create clean Flutter project
+      # =========================================================
       - name: Create Najma Flutter Project
         shell: bash
         run: |
-          if [ ! -f "pubspec.yaml" ]; then
-            echo "Flutter project not found."
-            echo "Creating Najma Flutter project..."
+          set -e
 
-            flutter create . \
-              --project-name=najma \
-              --org=com.najma.app \
-              --platforms=android
+          rm -rf clean_najma_app
 
-          else
-            echo "Flutter project already exists."
-          fi
+          flutter create \
+            --org com.najma.app \
+            --project-name najma_app \
+            --platforms android \
+            clean_najma_app
 
+          cd clean_najma_app
 
-      # --------------------------------
-      # 4. التحقق من Flutter
-      # --------------------------------
-      - name: Check Flutter
-        run: |
-          flutter --version
-          flutter doctor -v
+          rm -rf lib/*
+          mkdir -p lib/screens
 
-
-      # --------------------------------
-      # 5. تثبيت Java
-      # --------------------------------
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "17"
-
-
-      # --------------------------------
-      # 6. إعداد Android SDK
-      # --------------------------------
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-
-      # --------------------------------
-      # 7. إنشاء مجلدات المشروع
-      # --------------------------------
-      - name: Create App Structure
+      # =========================================================
+      # 5. Main Application
+      # =========================================================
+      - name: Create Main Application
         shell: bash
         run: |
-          mkdir -p assets
-          mkdir -p lib
-          mkdir -p lib/screens
-          mkdir -p lib/widgets
-          mkdir -p lib/models
-          mkdir -p lib/services
+          set -e
+          cd clean_najma_app/lib
 
+          cat > main.dart <<'DART'
+          import 'package:flutter/material.dart';
+          import 'screens/main_navigation.dart';
 
-      # --------------------------------
-      # 8. تحميل الحزم
-      # --------------------------------
-      - name: Flutter Pub Get
+          void main() {
+            WidgetsFlutterBinding.ensureInitialized();
+            runApp(const NajmaApp());
+          }
+
+          class NajmaApp extends StatelessWidget {
+            const NajmaApp({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                title: 'نجمة | Najma',
+                theme: ThemeData(
+                  useMaterial3: true,
+                  brightness: Brightness.light,
+                  scaffoldBackgroundColor: Colors.white,
+                  colorScheme: ColorScheme.fromSeed(
+                    seedColor: const Color(0xFFFE2C55),
+                    brightness: Brightness.light,
+                  ),
+                  fontFamily: 'sans',
+                  appBarTheme: const AppBarTheme(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    elevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                  ),
+                ),
+                home: const MainNavigationScreen(),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 6. Main Navigation
+      # =========================================================
+      - name: Create Main Navigation
+        shell: bash
         run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > main_navigation.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          import 'home_feed_screen.dart';
+          import 'friends_screen.dart';
+          import 'create_post_screen.dart';
+          import 'inbox_screen.dart';
+          import 'profile_screen.dart';
+
+          class MainNavigationScreen extends StatefulWidget {
+            const MainNavigationScreen({super.key});
+
+            @override
+            State<MainNavigationScreen> createState() =>
+                _MainNavigationScreenState();
+          }
+
+          class _MainNavigationScreenState
+              extends State<MainNavigationScreen> {
+            int currentIndex = 0;
+
+            final List<Widget> pages = const [
+              HomeFeedScreen(),
+              FriendsScreen(),
+              SizedBox(),
+              InboxScreen(),
+              ProfileScreen(),
+            ];
+
+            void selectTab(int index) {
+              if (index == 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CreatePostScreen(),
+                  ),
+                );
+                return;
+              }
+
+              setState(() {
+                currentIndex = index;
+              });
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Directionality(
+                textDirection: TextDirection.rtl,
+                child: Scaffold(
+                  body: IndexedStack(
+                    index: currentIndex,
+                    children: pages,
+                  ),
+                  bottomNavigationBar: _bottomNavigation(),
+                ),
+              );
+            }
+
+            Widget _bottomNavigation() {
+              return SafeArea(
+                top: false,
+                child: Container(
+                  height: 70,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      top: BorderSide(
+                        color: Color(0xFFE5E5E5),
+                        width: 0.7,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _navItem(
+                        icon: Icons.home_rounded,
+                        label: 'الصفحة الرئيسية',
+                        index: 0,
+                      ),
+                      _navItem(
+                        icon: Icons.people_outline_rounded,
+                        label: 'الأصدقاء',
+                        index: 1,
+                        badge: '99',
+                      ),
+                      _createButton(),
+                      _navItem(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        label: 'صندوق الوارد',
+                        index: 3,
+                        badge: '99+',
+                      ),
+                      _navItem(
+                        icon: Icons.person_outline_rounded,
+                        label: 'الملف الشخصي',
+                        index: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _navItem({
+              required IconData icon,
+              required String label,
+              required int index,
+              String? badge,
+            }) {
+              final bool selected = currentIndex == index;
+
+              return GestureDetector(
+                onTap: () => selectTab(index),
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  width: 72,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            icon,
+                            size: 27,
+                            color: selected
+                                ? Colors.black
+                                : const Color(0xFF777777),
+                          ),
+                          if (badge != null)
+                            Positioned(
+                              top: -8,
+                              right: -12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFE2C55),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  badge,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: selected
+                              ? Colors.black
+                              : const Color(0xFF777777),
+                          fontWeight:
+                              selected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _createButton() {
+              return GestureDetector(
+                onTap: () => selectTab(2),
+                child: Container(
+                  width: 50,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF25F4EE),
+                        Color(0xFFFE2C55),
+                      ],
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.black,
+                      size: 25,
+                    ),
+                  ),
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 7. Home Feed
+      # =========================================================
+      - name: Create Home Feed
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > home_feed_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          import 'search_screen.dart';
+
+          class HomeFeedScreen extends StatefulWidget {
+            const HomeFeedScreen({super.key});
+
+            @override
+            State<HomeFeedScreen> createState() => _HomeFeedScreenState();
+          }
+
+          class _HomeFeedScreenState extends State<HomeFeedScreen> {
+            bool liked = false;
+            bool saved = false;
+
+            int likes = 3179;
+
+            void toggleLike() {
+              setState(() {
+                liked = !liked;
+                likes += liked ? 1 : -1;
+              });
+            }
+
+            void openComments() {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => const CommentsSheet(),
+              );
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.black,
+                body: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0xFF000000),
+                              Color(0xFF120C12),
+                              Color(0xFF2A141F),
+                              Color(0xFF000000),
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.play_circle_outline,
+                            size: 82,
+                            color: Colors.white.withOpacity(0.25),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SafeArea(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.live_tv_outlined,
+                                    color: Colors.white,
+                                    size: 29,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: const [
+                                      Text(
+                                        'لك',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(width: 25),
+                                      Text(
+                                        'أتابعه',
+                                        style: TextStyle(
+                                          color: Colors.white60,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                      SizedBox(width: 25),
+                                      Text(
+                                        'المجتمع',
+                                        style: TextStyle(
+                                          color: Colors.white60,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const SearchScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.search,
+                                    color: Colors.white,
+                                    size: 31,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Positioned(
+                      right: 12,
+                      bottom: 120,
+                      child: Column(
+                        children: [
+                          _action(
+                            icon: Icons.person,
+                            text: '+',
+                            isAvatar: true,
+                          ),
+                          const SizedBox(height: 18),
+                          GestureDetector(
+                            onTap: toggleLike,
+                            child: Column(
+                              children: [
+                                Icon(
+                                  liked
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: liked
+                                      ? const Color(0xFFFE2C55)
+                                      : Colors.white,
+                                  size: 38,
+                                ),
+                                Text(
+                                  '$likes',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          GestureDetector(
+                            onTap: openComments,
+                            child: _action(
+                              icon: Icons.chat_bubble,
+                              text: '33',
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                saved = !saved;
+                              });
+                            },
+                            child: _action(
+                              icon: saved
+                                  ? Icons.bookmark
+                                  : Icons.bookmark_border,
+                              text: '171',
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          _action(
+                            icon: Icons.reply_rounded,
+                            text: '22',
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Positioned(
+                      right: 18,
+                      left: 90,
+                      bottom: 28,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: const [
+                          Text(
+                            'Boxing.sr',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 7),
+                          Text(
+                            'Price Nassem 👑 #foryoupage #boxingtok',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            '#pricenassem #allahhuakbar #boxing',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'أشار المبدع إلى أنه من إنتاج الذكاء الاصطناعي',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'انظر الترجمة',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            Widget _action({
+              required IconData icon,
+              required String text,
+              bool isAvatar = false,
+            }) {
+              return Column(
+                children: [
+                  Container(
+                    width: isAvatar ? 52 : 48,
+                    height: isAvatar ? 52 : 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isAvatar
+                          ? Colors.white
+                          : Colors.transparent,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isAvatar ? Colors.black : Colors.white,
+                      size: isAvatar ? 31 : 36,
+                    ),
+                  ),
+                  if (isAvatar)
+                    Container(
+                      margin: const EdgeInsets.only(top: -12),
+                      width: 27,
+                      height: 27,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFE2C55),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  Text(
+                    text,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              );
+            }
+          }
+
+          class CommentsSheet extends StatelessWidget {
+            const CommentsSheet({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return DraggableScrollableSheet(
+                initialChildSize: 0.65,
+                minChildSize: 0.35,
+                maxChildSize: 0.9,
+                builder: (context, controller) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            const Expanded(
+                              child: Center(
+                                child: Text(
+                                  '33 تعليقًا',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 48),
+                          ],
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: ListView(
+                            controller: controller,
+                            children: const [
+                              _Comment(
+                                name: 'جهاز المخابرات العامة',
+                                text: 'الله أكبر الله أكبر',
+                                likes: '4',
+                              ),
+                              _Comment(
+                                name: 'Haitam dj',
+                                text: 'مشاء الله عليك',
+                                likes: '3',
+                              ),
+                              _Comment(
+                                name: 'yönsé',
+                                text: 'نقول إلى الجنة 🥰🥰⚡',
+                                likes: '2',
+                              ),
+                              _Comment(
+                                name: 'Lashari',
+                                text:
+                                    'This is the best boxer and shahzada off Islam ❤️',
+                                likes: '2',
+                              ),
+                              _Comment(
+                                name: 'mustafaeIach',
+                                text: '🥰🥰🥰',
+                                likes: '1',
+                              ),
+                            ],
+                          ),
+                        ),
+                        SafeArea(
+                          top: false,
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            color: Colors.white,
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.alternate_email,
+                                  color: Colors.black,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F1F1),
+                                      borderRadius: BorderRadius.circular(25),
+                                    ),
+                                    child: const TextField(
+                                      decoration: InputDecoration(
+                                        hintText: 'إضافة تعليق...',
+                                        border: InputBorder.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.image_outlined,
+                                  color: Colors.black,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }
+          }
+
+          class _Comment extends StatelessWidget {
+            final String name;
+            final String text;
+            final String likes;
+
+            const _Comment({
+              required this.name,
+              required this.text,
+              required this.likes,
+            });
+
+            @override
+            Widget build(BuildContext context) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 13,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CircleAvatar(
+                      radius: 21,
+                      backgroundColor: Color(0xFFE5E5E5),
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            text,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            'رد',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      children: [
+                        const Icon(
+                          Icons.favorite_border,
+                          color: Colors.grey,
+                        ),
+                        Text(
+                          likes,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 8. Search
+      # =========================================================
+      - name: Create Search Screen
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > search_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class SearchScreen extends StatefulWidget {
+            const SearchScreen({super.key});
+
+            @override
+            State<SearchScreen> createState() => _SearchScreenState();
+          }
+
+          class _SearchScreenState extends State<SearchScreen> {
+            final TextEditingController controller =
+                TextEditingController();
+
+            final List<String> history = [
+              'ميسي',
+              'انتصارات نسيم حميد',
+              'مدام عاد النفس خضراء يارب حولي بعدها كامله',
+              'لحظة دخول ايمن المساوي',
+              'اعلانات مصطفى السومري مضحكه',
+            ];
+
+            final List<String> suggestions = [
+              'naseem hamed vs kevin kelly',
+              'نسيم حميد بطل العالم',
+              'هزيمة نسيم حميد امام المكسيكي',
+              'ادم نسيم حميد',
+              'حميد العالمي',
+              'فوز نسيم حميد على انطونيو باريرا',
+              'أويكو غورمان تفاجئ محمد صلاح بأغنية خاصة',
+              'احتفال محمد صلاح مع جماهير طرابزون',
+              'محمد صلاح في تركيا',
+              'prince naseem and brendan ingle',
+            ];
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.white,
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                'بحث',
+                                style: TextStyle(
+                                  color: Color(0xFFFE2C55),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F1F1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: TextField(
+                                  controller: controller,
+                                  textDirection: TextDirection.rtl,
+                                  decoration: const InputDecoration(
+                                    hintText: 'بحث',
+                                    prefixIcon: Icon(Icons.search),
+                                    suffixIcon: Icon(
+                                      Icons.camera_alt_outlined,
+                                    ),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(
+                                Icons.arrow_forward,
+                                size: 30,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            for (final item in history)
+                              ListTile(
+                                leading: const Icon(
+                                  Icons.close,
+                                  color: Colors.grey,
+                                ),
+                                title: Text(
+                                  item,
+                                  textAlign: TextAlign.right,
+                                ),
+                                trailing: const Icon(
+                                  Icons.history,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            const Divider(),
+                            const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Text(
+                                'قد يعجبك',
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ),
+                            for (int i = 0; i < suggestions.length; i++)
+                              ListTile(
+                                leading: Icon(
+                                  Icons.circle,
+                                  size: 8,
+                                  color: i < 2
+                                      ? const Color(0xFFFE2C55)
+                                      : Colors.grey,
+                                ),
+                                title: Text(
+                                  suggestions[i],
+                                  textAlign: TextAlign.right,
+                                ),
+                                subtitle: const Text(
+                                  'شاهدته للتو',
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 9. Inbox
+      # =========================================================
+      - name: Create Inbox Screen
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > inbox_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          import 'chat_detail_screen.dart';
+
+          class InboxScreen extends StatelessWidget {
+            const InboxScreen({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              final messages = [
+                ['متابعون جدد', 'فارس بدأ في متابعتك.', '19'],
+                ['النشاط', 'Jamal و Fans.alaaymam وآخرون قاموا بزيارة...', '13'],
+                ['جيش كريم الدامي (جبل)', 'شارك بثًا مباشرًا!', '43'],
+                ['حصريات الغاني وجلسات كاملة', 'شارك فيديو.', '67'],
+                ['إشعارات النظام', 'تحديث الحساب: تحديث إرشادات...', ''],
+                ['علي الاحمدي ALI Al-Ahmadi', 'تم الإرسال', '2'],
+                ['صقر الجبل 🦅', 'يدعوك للانضمام كضيف', '2'],
+                ['محمد هزاع', 'قل مرحبًا لمحمد هزاع', ''],
+                ['ابوالعز', 'قل مرحبًا بابوالعز', ''],
+              ];
+
+              return Scaffold(
+                backgroundColor: Colors.white,
+                appBar: AppBar(
+                  title: const Text(
+                    'صندوق الوارد',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+                  leading: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.search),
+                  ),
+                  actions: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.person_add_alt_1),
+                    ),
+                  ],
+                ),
+                body: ListView(
+                  children: [
+                    SizedBox(
+                      height: 125,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        reverse: true,
+                        children: const [
+                          _Story(
+                            name: 'إنشاء',
+                            icon: Icons.add,
+                          ),
+                          _Story(name: 'فيصل'),
+                          _Story(name: 'ماريا 🌹'),
+                          _Story(name: 'ليالي أجواء'),
+                        ],
+                      ),
+                    ),
+                    const Divider(),
+                    for (final item in messages)
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 5,
+                        ),
+                        leading: item[2].isEmpty
+                            ? const CircleAvatar(
+                                backgroundColor: Color(0xFFE8E8E8),
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : CircleAvatar(
+                                backgroundColor:
+                                    const Color(0xFFE8E8E8),
+                                child: Text(
+                                  item[2],
+                                  style: const TextStyle(
+                                    color: Color(0xFFFE2C55),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                        title: Text(
+                          item[0],
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          item[1],
+                          textAlign: TextAlign.right,
+                        ),
+                        trailing: const CircleAvatar(
+                          backgroundColor: Color(0xFFE8E8E8),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                          ),
+                        ),
+                        onTap: item[0].contains('علي')
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ChatDetailScreen(
+                                      username: 'علي الاحمدي',
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
+                      ),
+                  ],
+                ),
+              );
+            }
+          }
+
+          class _Story extends StatelessWidget {
+            final String name;
+            final IconData? icon;
+
+            const _Story({
+              required this.name,
+              this.icon,
+            });
+
+            @override
+            Widget build(BuildContext context) {
+              return Container(
+                width: 105,
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 78,
+                      height: 78,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF25BFEA),
+                          width: 4,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor: const Color(0xFFE6E6E6),
+                        child: Icon(
+                          icon ?? Icons.person,
+                          size: 35,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 10. Chat
+      # =========================================================
+      - name: Create Chat Screen
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > chat_detail_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class ChatDetailScreen extends StatefulWidget {
+            final String username;
+
+            const ChatDetailScreen({
+              super.key,
+              required this.username,
+            });
+
+            @override
+            State<ChatDetailScreen> createState() =>
+                _ChatDetailScreenState();
+          }
+
+          class _ChatDetailScreenState
+              extends State<ChatDetailScreen> {
+            final TextEditingController controller =
+                TextEditingController();
+
+            final List<String> messages = [];
+
+            void send() {
+              final text = controller.text.trim();
+
+              if (text.isEmpty) {
+                return;
+              }
+
+              setState(() {
+                messages.add(text);
+                controller.clear();
+              });
+            }
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.white,
+                appBar: AppBar(
+                  leading: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                  title: Text(widget.username),
+                  centerTitle: true,
+                  actions: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.more_horiz),
+                    ),
+                  ],
+                ),
+                body: Column(
+                  children: [
+                    Expanded(
+                      child: messages.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 42,
+                                    backgroundColor: Color(0xFFE5E5E5),
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    widget.username,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(15),
+                              itemCount: messages.length,
+                              itemBuilder: (_, index) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(
+                                      bottom: 10,
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F1F1),
+                                      borderRadius:
+                                          BorderRadius.circular(18),
+                                    ),
+                                    child: Text(messages[index]),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    SafeArea(
+                      top: false,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        color: const Color(0xFFF5F5F5),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.camera_alt_outlined),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                controller: controller,
+                                decoration: InputDecoration(
+                                  hintText: 'رسالة...',
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(25),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                                onSubmitted: (_) => send(),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: send,
+                              icon: const Icon(
+                                Icons.send,
+                                color: Color(0xFFFE2C55),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 11. Profile
+      # =========================================================
+      - name: Create Profile Screen
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > profile_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          import 'drawer_menu.dart';
+
+          class ProfileScreen extends StatelessWidget {
+            const ProfileScreen({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.white,
+                endDrawer: const DrawerMenu(),
+                appBar: AppBar(
+                  leading: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.person_add_alt),
+                  ),
+                  title: const Text(
+                    'Boxing.sr',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+                  actions: [
+                    Builder(
+                      builder: (context) {
+                        return IconButton(
+                          onPressed: () {
+                            Scaffold.of(context).openEndDrawer();
+                          },
+                          icon: const Icon(Icons.menu),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                body: ListView(
+                  children: [
+                    const SizedBox(height: 18),
+                    const CircleAvatar(
+                      radius: 47,
+                      backgroundColor: Colors.black,
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.white,
+                        size: 55,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Center(
+                      child: Text(
+                        'Boxing.sr',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Center(
+                      child: Text(
+                        '@boxing.sr8',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        _Stat(
+                          number: '50',
+                          title: 'أتابعه',
+                        ),
+                        _Stat(
+                          number: '-',
+                          title: 'متابعين',
+                        ),
+                        _Stat(
+                          number: '101.3 ألف',
+                          title: 'تسجيلات الإعجاب',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 17),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color(0xFFFE2C55),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(150, 48),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(7),
+                            ),
+                          ),
+                          child: const Text(
+                            'متابعة',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.black,
+                            minimumSize: const Size(150, 48),
+                            side: BorderSide.none,
+                            backgroundColor:
+                                const Color(0xFFF2F2F2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(7),
+                            ),
+                          ),
+                          child: const Text(
+                            'مراسلة',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    const Center(
+                      child: Text(
+                        '" Alhamdulillah " 🌙🏅',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.grid_view),
+                        SizedBox(width: 35),
+                        Icon(Icons.favorite_border),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(2),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 2,
+                        mainAxisSpacing: 2,
+                      ),
+                      itemCount: 9,
+                      itemBuilder: (_, index) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.grey.shade900,
+                                Colors.grey.shade700,
+                              ],
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow,
+                            color: Colors.white70,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+
+          class _Stat extends StatelessWidget {
+            final String number;
+            final String title;
+
+            const _Stat({
+              required this.number,
+              required this.title,
+            });
+
+            @override
+            Widget build(BuildContext context) {
+              return SizedBox(
+                width: 110,
+                child: Column(
+                  children: [
+                    Text(
+                      number,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 12. Drawer Menu
+      # =========================================================
+      - name: Create Drawer Menu
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > drawer_menu.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          import 'settings_privacy_screen.dart';
+
+          class DrawerMenu extends StatelessWidget {
+            const DrawerMenu({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Drawer(
+                backgroundColor: Colors.white,
+                width: MediaQuery.of(context).size.width * 0.86,
+                child: SafeArea(
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      const SizedBox(height: 18),
+
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 28,
+                        ),
+                        child: Text(
+                          'الأصول',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+
+                      _item(
+                        icon: Icons.account_balance_wallet_outlined,
+                        title: 'رصيد',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'رصيد المحفظة سيظهر هنا',
+                          );
+                        },
+                      ),
+
+                      const Divider(),
+
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 10,
+                        ),
+                        child: Text(
+                          'الأدوات الشخصية',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+
+                      _item(
+                        icon: Icons.history,
+                        title: 'مركز الأنشطة',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'مركز الأنشطة',
+                          );
+                        },
+                      ),
+
+                      _item(
+                        icon: Icons.cloud_download_outlined,
+                        title: 'فيديوهات دون اتصال بالإنترنت',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'الفيديوهات المحفوظة دون اتصال',
+                          );
+                        },
+                      ),
+
+                      _item(
+                        icon: Icons.qr_code_2,
+                        title: 'رمز QR لديك',
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('رمز QR الخاص بك'),
+                              content: const SizedBox(
+                                width: 200,
+                                height: 200,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.qr_code_2,
+                                    size: 170,
+                                  ),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context),
+                                  child: const Text('إغلاق'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+
+                      const Divider(),
+
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 10,
+                        ),
+                        child: Text(
+                          'أدوات الإبداع والأعمال',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+
+                      _item(
+                        icon: Icons.auto_awesome,
+                        title: 'Najma Studio',
+                        onTap: () {
+                          _showMessage(
+                            context,
+                            'استوديو نجمة',
+                          );
+                        },
+                      ),
+
+                      _item(
+                        icon: Icons.settings_outlined,
+                        title: 'الإعدادات والخصوصية',
+                        onTap: () {
+                          Navigator.pop(context);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const SettingsPrivacyScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _item({
+              required IconData icon,
+              required String title,
+              required VoidCallback onTap,
+            }) {
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                ),
+                leading: const Icon(
+                  Icons.chevron_left,
+                  color: Colors.grey,
+                ),
+                trailing: Icon(
+                  icon,
+                  color: Colors.black,
+                  size: 27,
+                ),
+                title: Text(
+                  title,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: onTap,
+              );
+            }
+
+            void _showMessage(
+              BuildContext context,
+              String message,
+            ) {
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    message,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 13. Settings & Privacy
+      # =========================================================
+      - name: Create Settings Privacy
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > settings_privacy_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class SettingsPrivacyScreen extends StatelessWidget {
+            const SettingsPrivacyScreen({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: const Color(0xFFF5F5F5),
+                appBar: AppBar(
+                  title: const Text(
+                    'الإعدادات والخصوصية',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+                  leading: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                ),
+                body: ListView(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  children: [
+                    _section(
+                      title: 'النشاط',
+                      items: [
+                        _row(
+                          Icons.video_collection_outlined,
+                          'إدارة المنشورات',
+                        ),
+                        _row(
+                          Icons.video_camera_back_outlined,
+                          'تفضيلات المحتوى',
+                        ),
+                        _row(
+                          Icons.live_tv_outlined,
+                          'LIVE',
+                        ),
+                        _row(
+                          Icons.notifications_none,
+                          'الإشعارات',
+                        ),
+                        _row(
+                          Icons.hourglass_empty,
+                          'الوقت والرفاهية',
+                          dot: true,
+                        ),
+                        _row(
+                          Icons.family_restroom,
+                          'ربط الحسابات للعائلة',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'الحساب',
+                      items: [
+                        _row(
+                          Icons.person_outline,
+                          'الحساب',
+                        ),
+                        _row(
+                          Icons.shield_outlined,
+                          'الأمان والأذونات',
+                        ),
+                        _row(
+                          Icons.share_outlined,
+                          'مشاركة الملف الشخصي',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'الظهور',
+                      items: [
+                        _row(
+                          Icons.lock_outline,
+                          'حساب خاص',
+                        ),
+                        _row(
+                          Icons.block,
+                          'الحسابات المحظورة',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'التفاعلات',
+                      items: [
+                        _row(
+                          Icons.alternate_email,
+                          'الذكر',
+                        ),
+                        _row(
+                          Icons.send_outlined,
+                          'الرسائل الخاصة',
+                        ),
+                        _row(
+                          Icons.repeat,
+                          'إعادة استخدام المحتوى',
+                        ),
+                        _row(
+                          Icons.link,
+                          'عرض الملف الشخصي عند مشاركة الروابط',
+                          value: 'تشغيل',
+                        ),
+                        _row(
+                          Icons.download,
+                          'التنزيلات',
+                          value: 'تشغيل',
+                        ),
+                        _row(
+                          Icons.people_outline,
+                          'قائمة المتابعة',
+                          value: 'لك فقط',
+                        ),
+                        _row(
+                          Icons.favorite,
+                          'فيديوهات أعجبتك',
+                          value: 'لك فقط',
+                        ),
+                        _row(
+                          Icons.visibility_outlined,
+                          'المشاهدون',
+                          value: 'تشغيل',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'المحتوى والعرض',
+                      items: [
+                        _row(
+                          Icons.music_note,
+                          'موسيقى',
+                        ),
+                        _row(
+                          Icons.inbox_outlined,
+                          'صندوق الوارد والمراسلة',
+                        ),
+                        _row(
+                          Icons.history,
+                          'مركز الأنشطة',
+                        ),
+                        _row(
+                          Icons.groups_outlined,
+                          'عناصر التحكم في الجمهور',
+                        ),
+                        _row(
+                          Icons.campaign_outlined,
+                          'الإعلانات',
+                        ),
+                        _row(
+                          Icons.play_circle_outline,
+                          'تشغيل',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'ذاكرة التخزين المؤقت والبيانات',
+                      items: [
+                        _row(
+                          Icons.cloud_download_outlined,
+                          'فيديوهات دون اتصال بالإنترنت',
+                        ),
+                        _row(
+                          Icons.delete_outline,
+                          'تحرير المساحة',
+                        ),
+                        _row(
+                          Icons.data_saver_off,
+                          'توفير البيانات',
+                        ),
+                        _row(
+                          Icons.image_outlined,
+                          'الخلفية',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'الدعم وحول التطبيق',
+                      items: [
+                        _row(
+                          Icons.headset_mic_outlined,
+                          'مركز المساعدة',
+                        ),
+                        _row(
+                          Icons.lock_outline,
+                          'مركز الخصوصية',
+                        ),
+                        _row(
+                          Icons.info_outline,
+                          'الشروط والسياسات',
+                        ),
+                      ],
+                    ),
+
+                    _section(
+                      title: 'تسجيل الدخول',
+                      items: [
+                        _row(
+                          Icons.switch_account,
+                          'تبديل الحساب',
+                        ),
+                        _row(
+                          Icons.logout,
+                          'تسجيل الخروج',
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    const Center(
+                      child: Text(
+                        'Najma v1.0.0',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            Widget _section({
+              required String title,
+              required List<Widget> items,
+            }) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      20,
+                      18,
+                      20,
+                      8,
+                    ),
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      children: items,
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            Widget _row(
+              IconData icon,
+              String title, {
+              String? value,
+              bool dot = false,
+            }) {
+              return ListTile(
+                minVerticalPadding: 9,
+                leading: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (dot)
+                      Container(
+                        width: 9,
+                        height: 9,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFE2C55),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    const Icon(
+                      Icons.chevron_left,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
+                trailing: Icon(
+                  icon,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+                title: Text(
+                  title,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: value == null
+                    ? null
+                    : Text(
+                        value,
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
+                onTap: () {},
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 14. Create Post
+      # =========================================================
+      - name: Create Post Screen
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > create_post_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class CreatePostScreen extends StatefulWidget {
+            const CreatePostScreen({super.key});
+
+            @override
+            State<CreatePostScreen> createState() =>
+                _CreatePostScreenState();
+          }
+
+          class _CreatePostScreenState
+              extends State<CreatePostScreen> {
+            int selected = 2;
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.black,
+                body: SafeArea(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          color: const Color(0xFF111111),
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.videocam_outlined,
+                                  color: Colors.white38,
+                                  size: 80,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'معاينة الكاميرا',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 31,
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 15,
+                        right: 15,
+                        child: Column(
+                          children: const [
+                            Icon(
+                              Icons.flip_camera_ios_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(height: 25),
+                            Icon(
+                              Icons.flash_on_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(height: 25),
+                            Icon(
+                              Icons.timer_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            SizedBox(height: 25),
+                            Icon(
+                              Icons.speed,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 25,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                _mode('نص', 0),
+                                _mode('صورة', 1),
+                                _mode('15 ث', 2),
+                                _mode('60 ث', 3),
+                                _mode('10 د', 4),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              width: 78,
+                              height: 78,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 5,
+                                ),
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 62,
+                                  height: 62,
+                                  decoration:
+                                      const BoxDecoration(
+                                    color: Color(0xFFFE2C55),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            Widget _mode(String text, int index) {
+              final selectedMode = selected == index;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selected = index;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ),
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      color: selectedMode
+                          ? Colors.white
+                          : Colors.white54,
+                      fontWeight: selectedMode
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 15. Friends
+      # =========================================================
+      - name: Create Friends Screen
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app/lib/screens
+
+          cat > friends_screen.dart <<'DART'
+          import 'package:flutter/material.dart';
+
+          class FriendsScreen extends StatelessWidget {
+            const FriendsScreen({super.key});
+
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                backgroundColor: Colors.white,
+                appBar: AppBar(
+                  title: const Text(
+                    'الأصدقاء',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+                ),
+                body: ListView(
+                  padding: const EdgeInsets.all(18),
+                  children: [
+                    const Text(
+                      'اكتشف أصدقاء جدد',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    for (int i = 1; i <= 6; i++)
+                      Card(
+                        elevation: 0,
+                        color: const Color(0xFFF7F7F7),
+                        child: ListTile(
+                          leading: ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color(0xFFFE2C55),
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('متابعة'),
+                          ),
+                          trailing: const CircleAvatar(
+                            backgroundColor: Color(0xFFE5E5E5),
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                          title: Text(
+                            'مستخدم نجمة $i',
+                            textAlign: TextAlign.right,
+                          ),
+                          subtitle: Text(
+                            '@najma_user$i',
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+          }
+          DART
+
+      # =========================================================
+      # 16. Android App Label
+      # =========================================================
+      - name: Configure Android App
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("android/app/src/main/AndroidManifest.xml")
+
+          text = p.read_text()
+
+          text = text.replace(
+              'android:label="najma_app"',
+              'android:label="نجمة | Najma"'
+          )
+
+          p.write_text(text)
+          PY
+
+      # =========================================================
+      # 17. Dependencies
+      # =========================================================
+      - name: Flutter Pub Get
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app
           flutter pub get
 
-
-      # --------------------------------
-      # 9. فحص المشروع
-      # --------------------------------
-      - name: Flutter Analyze
-        run: |
-          flutter analyze
-
-
-      # --------------------------------
-      # 10. تنسيق Dart
-      # --------------------------------
+      # =========================================================
+      # 18. Format
+      # =========================================================
       - name: Format Dart Code
+        shell: bash
         run: |
+          set -e
+          cd clean_najma_app
           dart format lib
 
-
-      # --------------------------------
-      # 11. بناء APK
-      # --------------------------------
-      - name: Build Release APK
+      # =========================================================
+      # 19. Analyze
+      # =========================================================
+      - name: Analyze Flutter Project
+        shell: bash
         run: |
-          flutter build apk --release
+          set -e
+          cd clean_najma_app
+          flutter analyze
 
+      # =========================================================
+      # 20. Build Release APK
+      # =========================================================
+      - name: Build Release APK
+        shell: bash
+        run: |
+          set -e
+          cd clean_najma_app
 
-      # --------------------------------
-      # 12. تجهيز ملف APK
-      # --------------------------------
+          flutter build apk \
+            --release \
+            --split-per-abi=false
+
+      # =========================================================
+      # 21. Copy APK with simple name
+      # =========================================================
       - name: Prepare APK Artifact
         shell: bash
         run: |
-          mkdir -p build/najma-apk
-          cp build/app/outputs/flutter-apk/app-release.apk \
-             build/najma-apk/Najma.apk
+          set -e
 
+          mkdir -p output
 
-      # --------------------------------
-      # 13. رفع APK إلى GitHub
-      # --------------------------------
+          cp \
+            clean_najma_app/build/app/outputs/flutter-apk/app-release.apk \
+            output/Najma.apk
+
+      # =========================================================
+      # 22. Upload APK
+      # =========================================================
       - name: Upload Najma APK
         uses: actions/upload-artifact@v4
         with:
-          name: Najma-Android-APK
-          path: build/najma-apk/Najma.apk
+          name: Najma-Android-App
+          path: output/Najma.apk
           if-no-files-found: error
-
-
-      # --------------------------------
-      # 14. نجاح البناء
-      # --------------------------------
-      - name: Build Complete
-        run: |
-          echo "======================================"
-          echo "Najma Android APK built successfully!"
-          echo "======================================"
+          retention-days: 30
