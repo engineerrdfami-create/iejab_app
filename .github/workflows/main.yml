@@ -623,10 +623,12 @@ jobs:
         }
         EOF
 
-        # 10. Drawer Navigation Menu
-        cat << 'EOF' > screens/drawer_menu.dart
-        import 'package0:flutter/material.dart';
-        import 'settings_privacy_screen.dart';
+       
+     # 10. Drawer Navigation Menu
+      cat << 'EOF' > screens/drawer_menu.dart
+      import 'package:flutter/material.dart';
+      import 'settings_privacy_screen.dart';
+
 
         class DrawerMenu extends StatelessWidget {
           const DrawerMenu({super.key});
