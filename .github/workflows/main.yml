@@ -1,4 +1,4 @@
-name: Auto-Fix and Build Official APK
+name: Ultimate Fix and Build APK
 on:
   push:
     branches: [ main ]
@@ -30,37 +30,41 @@ jobs:
     - name: Unzip Project Files
       run: |
         sudo apt-get install -y unzip
-        if [ -f lib.zip ]; then
-          unzip -o lib.zip -d fresh_app/
-        fi
+        unzip -o lib.zip -d fresh_app/ || true
 
-    - name: Global Auto-Fix for Syntax Errors
+    - name: Strict Shell Auto-Fix for Code Errors
       run: |
         cd fresh_app/lib/
-        # 1. Fix Dollar signs in star_market
+        
+        # 1. Fix Dollar signs syntax in star_market.dart
         if [ -f star_market.dart ]; then
-          sed -y "s/'$ '/'\$ '/g" star_market.dart || sed -i "s/'$ '/'\$ '/g" star_market.dart
+          sed -i 's/\x27$ \x27/\x27\\$ \x27/g' star_market.dart
         fi
-        # 2. Fix duplicate itemCount in star_chat
+        
+        # 2. Fix duplicate itemCount in star_chat.dart
         if [ -f star_chat.dart ]; then
-          sed -y 's/itemCount: itemCount:/itemCount:/g' star_chat.dart || sed -i 's/itemCount: itemCount:/itemCount:/g' star_chat.dart
+          sed -i 's/itemCount: itemCount:/itemCount:/g' star_chat.dart
         fi
-        # 3. Fix colors syntax in reels and live
+        
+        # 3. Fix white90 color object in najma_reels.dart
         if [ -f najma_reels.dart ]; then
-          sed -y 's/white90/Colors.white70/g' najma_reels.dart || sed -i 's/white90/Colors.white70/g' najma_reels.dart
+          sed -i 's/white90/Colors.white70/g' najma_reels.dart
         fi
+        
+        # 4. Fix white60 color object in star_live.dart
         if [ -f star_live.dart ]; then
-          sed -y 's/white60/Colors.white60/g' star_live.dart || sed -i 's/white60/Colors.white60/g' star_live.dart
+          sed -i 's/white60/Colors.white60/g' star_live.dart
         fi
 
-    - name: Build Official APK
+    - name: Build Official Release APK
       run: |
         cd fresh_app
         flutter pub get
-        flutter build apk --release || flutter build apk --release --no-sound-null-safety
+        flutter build apk --release
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: iejab-app-release-apk
         path: fresh_app/build/app/outputs/flutter-apk/app-release.apk
+        
