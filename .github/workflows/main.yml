@@ -1,11 +1,11 @@
-name: Unzip and Build APK
+name: Generate Pubspec and Build APK
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  unzip_and_build:
+  build_apk:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
@@ -14,9 +14,33 @@ jobs:
     - name: Unzip Project Files
       run: |
         sudo apt-get install -y unzip
-        unzip -o lib.zip
-        unzip -o .github.zip
-        rm -rf *.zip
+        unzip -o lib.zip || true
+        unzip -o .github.zip || true
+
+    - name: Automatically Create Missing pubspec.yaml
+      run: |
+        cat << 'EOF' > pubspec.yaml
+        name: iejab_app
+        description: "A new Flutter project for Iejab App."
+        publish_to: 'none'
+        version: 1.0.0+1
+
+        environment:
+          sdk: '>=3.0.0 <4.0.0'
+
+        dependencies:
+          flutter:
+            sdk: flutter
+          cupertino_icons: ^1.0.2
+
+        dev_dependencies:
+          flutter_test:
+            sdk: flutter
+          flutter_lints: ^2.0.0
+
+        flutter:
+          uses-material-design: true
+        EOF
 
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -29,5 +53,14 @@ jobs:
       with:
         channel: 'stable'
 
-    - name: Build APK
+    - name: Install Dependencies
+      run: flutter pub get
+
+    - name: Build Official APK
       run: flutter build apk --release
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: iejab-app-release-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
