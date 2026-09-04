@@ -230,7 +230,7 @@ jobs:
           Widget build(BuildContext context) {
             return Scaffold(
               appBar: AppBar(title: const Text('المحفظة الرقمية', style: TextStyle(fontWeight: FontWeight.bold)), backgroundColor: const Color(0xFF0F101D), elevation: 0),
-              body: const Center(child: Text('رصيد المحفظة: $150.00', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+              body: const Center(child: Text('رصيد المحفظة: \$150.00', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
             );
           }
         }
@@ -238,7 +238,7 @@ jobs:
 
         # 8. Settings Privacy Screen
         cat << 'EOF' > settings_privacy.dart
-        import 'package:flutter/material.dart';
+        import 'package0:flutter/material.dart';
         class SettingsPrivacyScreen extends StatelessWidget {
           const SettingsPrivacyScreen({super.key});
           @override
